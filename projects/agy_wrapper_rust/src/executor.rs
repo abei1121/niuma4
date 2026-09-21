@@ -10,8 +10,8 @@ use std::time::Duration as StdDuration;
 
 use crate::retry::{is_network_error, is_quota_exhausted, parse_reset_duration};
 use crate::state::{
-    account_has_gemini_config, ensure_account_token_fresh, get_account_list, is_account_blocked,
-    load_state, save_state, BASE_ACCOUNTS_DIR, ORIGINAL_AGY_PATH,
+    account_has_gemini_config, get_account_list, is_account_blocked, load_state, save_state,
+    BASE_ACCOUNTS_DIR, ORIGINAL_AGY_PATH,
 };
 
 /// 主入口：带账号自动轮换的 agy 执行器
@@ -56,8 +56,6 @@ pub fn run_with_account_rotation(cmd_args: &[String]) {
             continue;
         }
 
-        // 关键：按需惰性检查与保鲜当前账号 Token（仅在剩余<5分钟时单账号静默刷新）
-        ensure_account_token_fresh(acc_name);
 
         // 持久化当前激活账号
         state.active_index = test_idx;

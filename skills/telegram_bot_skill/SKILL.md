@@ -29,4 +29,4 @@ triggers:
    `/Users/hi/niuma/scripts/manage_services.sh restart telegram_bot_rust`
 
 ## 验证与排障
-- 发送接口探针: `curl -s -X POST http://127.0.0.1:8090/send_tg -H 'Content-Type: application/json' -d '{"message": "ping"}'`
+- 发送接口探针: `curl -s -X POST http://127.0.0.1:8090/send_tg --data-urlencode "msg=ping"`

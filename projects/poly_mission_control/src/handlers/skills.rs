@@ -5,7 +5,7 @@ use serde_json::json;
 use std::fs;
 use std::path::Path;
 
-const LENGBEIFEN_DIR: &str = "/Users/hi/niuma/lengbeifen";
+const WIKI_DIR: &str = "/Users/hi/niuma/wiki";
 
 fn get_skills_dir() -> String {
     let candidate_dirs = [
@@ -58,21 +58,24 @@ pub async fn list_skills() -> Json<Vec<SkillSummary>> {
                 if skill_md_path.exists() {
                     let skill_content = fs::read_to_string(&skill_md_path).unwrap_or_default();
                     let (desc, triggers) = parse_yaml_frontmatter(&skill_content);
-                    let ref_path = format!("{}/{}_reference.md", LENGBEIFEN_DIR, skill_name);
+                    let skill_lines = skill_content.lines().count();
 
-                    let (ref_lines, exec_path) = if let Ok(ref_content) = fs::read_to_string(&ref_path) {
-                        let lines = ref_content.lines().count();
-                        let exec = extract_executable_path(&ref_content, &skill_name);
-                        (lines, exec)
-                    } else {
-                        (0, extract_fallback_executable(&skill_name))
+                    let wiki_doc = match skill_name.as_str() {
+                        "system_keeper" => Some("/Users/hi/niuma/wiki/MacM2内存与进程看门狗.md"),
+                        "niuma_disaster_recovery" => Some("/Users/hi/niuma/wiki/异地容灾与脱敏备份规范.md"),
+                        "video_director_pipeline" => Some("/Users/hi/niuma/wiki/12大黄金赛道与72导演指南.md"),
+                        _ => None,
                     };
 
-                    let is_exec_ok = if exec_path.starts_with('/') {
-                        Path::new(&exec_path).exists()
+                    let (ref_path, ref_lines) = if let Some(w) = wiki_doc.filter(|p| Path::new(p).exists()) {
+                        let lines = fs::read_to_string(w).map(|s| s.lines().count()).unwrap_or(0);
+                        (w.to_string(), lines)
                     } else {
-                        true
+                        (skill_md_path.to_string_lossy().to_string(), skill_lines)
                     };
+
+                    let exec_path = extract_fallback_executable(&skill_name);
+                    let is_exec_ok = Path::new(&exec_path).exists();
 
                     let title = get_skill_chinese_title(&skill_name);
 
@@ -98,26 +101,39 @@ pub async fn list_skills() -> Json<Vec<SkillSummary>> {
 pub async fn get_skill_detail(Query(query): Query<SkillDetailQuery>) -> Json<serde_json::Value> {
     let skills_dir = get_skills_dir();
     let skill_path = format!("{}/{}/SKILL.md", skills_dir, query.name);
-    let ref_path = format!("{}/{}_reference.md", LENGBEIFEN_DIR, query.name);
 
     let skill_content = fs::read_to_string(&skill_path).unwrap_or_default();
-    let ref_content = fs::read_to_string(&ref_path).unwrap_or_else(|_| "暂无冷备份文档".to_string());
+    let wiki_doc = match query.name.as_str() {
+        "system_keeper" => Some("/Users/hi/niuma/wiki/MacM2内存与进程看门狗.md"),
+        "niuma_disaster_recovery" => Some("/Users/hi/niuma/wiki/异地容灾与脱敏备份规范.md"),
+        "video_director_pipeline" => Some("/Users/hi/niuma/wiki/12大黄金赛道与72导演指南.md"),
+        _ => None,
+    };
+
+    let (ref_path, ref_content) = if let Some(w) = wiki_doc.filter(|p| Path::new(p).exists()) {
+        let c = fs::read_to_string(w).unwrap_or_else(|_| "暂无参考文档".to_string());
+        (w.to_string(), c)
+    } else {
+        (skill_path.clone(), skill_content.clone())
+    };
 
     Json(json!({
         "name": query.name,
         "skill_md": skill_content,
         "reference_doc": ref_content,
+        "reference_path": ref_path,
         "skill_path": skill_path,
         "ref_path": ref_path
     }))
 }
 
 pub async fn save_skill_detail(Json(payload): Json<SkillSaveRequest>) -> Json<serde_json::Value> {
-    let ref_path = format!("{}/{}_reference.md", LENGBEIFEN_DIR, payload.name);
-    if let Err(e) = fs::write(&ref_path, &payload.content) {
+    let skills_dir = get_skills_dir();
+    let skill_path = format!("{}/{}/SKILL.md", skills_dir, payload.name);
+    if let Err(e) = fs::write(&skill_path, &payload.content) {
         return Json(json!({"success": false, "error": e.to_string()}));
     }
-    Json(json!({"success": true, "path": ref_path}))
+    Json(json!({"success": true, "path": skill_path}))
 }
 
 fn parse_yaml_frontmatter(content: &str) -> (String, Vec<String>) {
@@ -172,14 +188,17 @@ fn extract_executable_path(ref_content: &str, skill_name: &str) -> String {
 
 fn extract_fallback_executable(skill_name: &str) -> String {
     match skill_name {
-        "agy_multi_account" => "/Users/hi/niuma/bin/agy_account".to_string(),
-        "anti_busy_wait_guard" => "/Users/hi/niuma/sandbox/agy_tool_guard/target/release/agy_tool_guard".to_string(),
+        "agy_multi_account" => "/Users/hi/niuma/bin/gemini_account_probe".to_string(),
+        "anti_busy_wait_guard" => "/Users/hi/niuma/bin/agy_tool_guard".to_string(),
         "hermes_heartbeat_worker" => "/Users/hi/niuma/bin/hermes_heartbeat_worker".to_string(),
         "hy2_network_rotator" => "/Users/hi/niuma/bin/hy2_switch".to_string(),
-        "system_fatal_tg_alert" => "/Users/hi/niuma/system_keeper_rust/target/release/system_keeper_rust".to_string(),
-        "system_keeper" => "/Users/hi/niuma/bin/system_keeper".to_string(),
-        "telegram_bot_skill" => "/Users/hi/niuma/tg_send".to_string(),
-        _ => format!("/Users/hi/niuma/bin/{}", skill_name),
+        "niuma_disaster_recovery" => "/Users/hi/niuma/bin/niuma_backup".to_string(),
+        "system_fatal_tg_alert" => "/Users/hi/niuma/bin/system_fatal_tg_alert".to_string(),
+        "system_keeper" => "/Users/hi/niuma/bin/system_keeper_rust".to_string(),
+        "telegram_bot_skill" => "/Users/hi/niuma/bin/tg_send".to_string(),
+        "video_director_pipeline" => "/Users/hi/niuma/bin/video_director_pipeline".to_string(),
+        "pinokio" => "/Users/hi/niuma/bin/pinokio".to_string(),
+        other => format!("/Users/hi/niuma/bin/{}", other),
     }
 }
 
@@ -189,9 +208,12 @@ fn get_skill_chinese_title(skill_name: &str) -> String {
         "anti_busy_wait_guard" => "Rust 原生工具防死循环守卫".to_string(),
         "hermes_heartbeat_worker" => "Hermes 心跳保活与主动推送".to_string(),
         "hy2_network_rotator" => "Hysteria 2 节点测速与自动轮换".to_string(),
+        "niuma_disaster_recovery" => "异地脱敏灾备与 GitHub 冷备份".to_string(),
         "system_fatal_tg_alert" => "系统致命错误监控与自愈推送".to_string(),
         "system_keeper" => "系统巡检守卫与孤儿进程收割".to_string(),
         "telegram_bot_skill" => "Telegram Bot 高并发通信与 CLI".to_string(),
+        "video_director_pipeline" => "12大垂直赛道×72细分角色视频导演".to_string(),
+        "pinokio" => "Pinokio 桌面应用生态桥接".to_string(),
         _ => skill_name.replace('_', " ").to_uppercase(),
     }
 }

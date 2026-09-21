@@ -70,5 +70,5 @@ python3 /Users/hi/niuma/bin/gemini_oauth_flow exchange "4/0A..." acc2
 5. **网络瞬断重试**：超时/502/503 类错误最多重试 3 次（间隔 3 秒），不触发账号轮换。
 
 ## 深度原理索引
-- 源码参考: `/tmp/fenshen2/agy_wrapper_rust/` (fenshen2 仓库)
+- 源码参考: `/Users/hi/niuma/niuma1-main/projects/agy_wrapper_rust/`
 - OAuth 换票脚本: `/Users/hi/niuma/niuma1-main/projects/gemini_account_probe/scripts/gemini_oauth_flow.py`

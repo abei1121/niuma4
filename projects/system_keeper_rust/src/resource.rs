@@ -37,6 +37,9 @@ pub fn check_system_resources_and_rotate_logs() {
         "/Users/hi/niuma/system_keeper.log",
         "/Users/hi/niuma/telegram_bot.log",
         "/Users/hi/niuma/proxy_health_checker.log",
+        "/Users/hi/niuma/hysteria.log",
+        "/Users/hi/niuma/lan_file_server.log",
+        "/Users/hi/niuma/launchd_boot.log",
     ];
 
     const MAX_SIZE: u64 = 10 * 1024 * 1024; // 10MB

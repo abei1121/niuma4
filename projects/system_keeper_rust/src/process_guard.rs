@@ -50,10 +50,19 @@ pub fn check_and_guard_services(sys: &mut System) {
             name: "lan_file_server",
             match_pattern: "lan_file_server",
             work_dir: "/Users/hi/niuma",
-            start_cmd: "nohup /Users/hi/niuma/bin/lan_file_server >> /Users/hi/niuma/lan_file_server.log 2>&1 &",
+            start_cmd: "nohup /Users/hi/niuma/bin/lan_file_server /Users/hi/niuma >> /Users/hi/niuma/lan_file_server.log 2>&1 &",
             alert_msg: "🚨 致命告警：局域网文件服务 lan_file_server 自动修复失败！",
             wait_secs: 2,
             bin_check: Some("/Users/hi/niuma/bin/lan_file_server"),
+        },
+        ServiceSpec {
+            name: "hysteria",
+            match_pattern: "hysteria client",
+            work_dir: "/Users/hi/niuma",
+            start_cmd: "nohup /Users/hi/niuma/bin/hysteria client --config /Users/hi/niuma/hysteria.yaml >> /Users/hi/niuma/hysteria.log 2>&1 &",
+            alert_msg: "🚨 致命告警：Hysteria 2 专线代理自动拉起失败！",
+            wait_secs: 2,
+            bin_check: Some("/Users/hi/niuma/bin/hysteria"),
         },
     ];
 

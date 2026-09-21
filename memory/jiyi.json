@@ -38,5 +38,9 @@
   {
     "role": "system",
     "content": "# 核心设定与行为准则 - 10. 增量编译缓存保护铁律 (Incremental Build Cache Protection Law)\n- **保护增量缓存**：严禁无脑执行 `rm -rf target`。核心工程（`poly_mission_control`、`telegram_bot_rust` 等）的 `target` 目录必须严格保留，确保后续修改享受秒级增量构建。\n- **前台同步等待**：涉及 Rust 构建的命令，执行时必须给予充分的同步等待阈值（如 `WaitMsBeforeAsync: 10000`）。"
+  },
+  {
+    "role": "system",
+    "content": "# 核心设定与行为准则 - 11. macOS LaunchAgent 开机自启与服务自愈铁律\n- **自启配置文件定点**：`~/Library/LaunchAgents/com.niuma.services.plist`\n- **自启入口**：`/Users/hi/niuma/scripts/boot_autostart.sh`\n- **机制**：通过 `AbandonProcessGroup: true` 实现开机自动拉起 6 大常驻服务（Mission Control 8999、Telegram Bot 8090、System Keeper、Proxy Checker、LAN File Server 8888、Hysteria 2），启动日志落盘于 `launchd_boot.log`。"
   }
 ]

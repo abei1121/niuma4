@@ -2,6 +2,7 @@ use std::fs;
 use log::{info, warn};
 use sysinfo::{Pid, System};
 
+#[cfg(not(target_os = "macos"))]
 fn has_deleted_pty(pid: u32) -> bool {
     for fd in 0..=2 {
         if let Ok(target) = fs::read_link(format!("/proc/{}/fd/{}", pid, fd)) {
@@ -9,6 +10,20 @@ fn has_deleted_pty(pid: u32) -> bool {
             if path_str.contains("/dev/pts/") && path_str.contains("(deleted)") {
                 return true;
             }
+        }
+    }
+    false
+}
+
+#[cfg(target_os = "macos")]
+fn has_deleted_pty(pid: u32) -> bool {
+    if let Ok(output) = std::process::Command::new("ps")
+        .args(["-o", "tty=", "-p", &pid.to_string()])
+        .output()
+    {
+        let tty = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if tty.contains("??") || tty.is_empty() {
+            return true;
         }
     }
     false
@@ -29,11 +44,12 @@ pub fn cleanup_orphan_agy_processes(sys: &System) {
             }
 
             let run_time_secs = process.run_time();
+            let is_reparented = process.parent().map(|p| p.as_u32() == 1).unwrap_or(false);
 
-            // 判定 1: 物理终端已注销且脱机挂死超过 300 秒的 CLI 孤儿
-            if has_deleted_pty(pid.as_u32()) && run_time_secs > 300 {
+            // 判定 1: 物理终端已注销且被 init/launchd(1) 收养脱机挂死超过 300 秒的 CLI 孤儿
+            if is_reparented && has_deleted_pty(pid.as_u32()) && run_time_secs > 300 {
                 warn!(
-                    "🧹 [孤儿回收] 检测到终端已销毁且超时挂起的悬挂进程 PID {} (cmd: {}, 运行时长: {}s)，执行安全回收",
+                    "🧹 [孤儿回收] 检测到终端已销毁且被 init(1) 收养超时挂起的悬挂进程 PID {} (cmd: {}, 运行时长: {}s)，执行安全回收",
                     pid, cmd, run_time_secs
                 );
                 let _ = nix::sys::signal::kill(
@@ -44,17 +60,15 @@ pub fn cleanup_orphan_agy_processes(sys: &System) {
             }
 
             // 判定 2: 被系统 init (PPID == 1) 收养，且已存活超过 30 分钟的异常挂起孤儿
-            if let Some(parent_pid) = process.parent() {
-                if parent_pid.as_u32() == 1 && run_time_secs > 1800 {
-                    warn!(
-                        "🧹 [孤儿回收] 检测到被 init(1) 收养且超时挂起的真孤儿进程 PID {} (cmd: {}, 运行时长: {}s)，执行安全回收",
-                        pid, cmd, run_time_secs
-                    );
-                    let _ = nix::sys::signal::kill(
-                        nix::unistd::Pid::from_raw(pid.as_u32() as i32),
-                        nix::sys::signal::Signal::SIGTERM,
-                    );
-                }
+            if is_reparented && run_time_secs > 1800 {
+                warn!(
+                    "🧹 [孤儿回收] 检测到被 init(1) 收养且超时挂起的真孤儿进程 PID {} (cmd: {}, 运行时长: {}s)，执行安全回收",
+                    pid, cmd, run_time_secs
+                );
+                let _ = nix::sys::signal::kill(
+                    nix::unistd::Pid::from_raw(pid.as_u32() as i32),
+                    nix::sys::signal::Signal::SIGTERM,
+                );
             }
         }
     }

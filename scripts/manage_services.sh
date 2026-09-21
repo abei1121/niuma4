@@ -7,6 +7,10 @@ BASE_DIR="/Users/hi/niuma"
 BIN_DIR="$BASE_DIR/bin"
 LOG_DIR="$BASE_DIR"
 
+export PATH="/Users/hi/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+export HOME="/Users/hi"
+export USER="hi"
+
 SERVICES=(
     "poly_mission_control:自媒体控制台中枢 Web 管理引擎 (8999端口):$BIN_DIR/poly_mission_control --port 8999 --host 0.0.0.0:$LOG_DIR/poly_mission_control.log"
     "system_keeper_rust:系统机械级常驻守护引擎 (孤儿收割与防卡死):$BIN_DIR/system_keeper_rust:$LOG_DIR/system_keeper.log"

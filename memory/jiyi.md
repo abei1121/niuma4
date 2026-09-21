@@ -48,3 +48,9 @@
 ## 10. 增量编译缓存保护铁律 (Incremental Build Cache Protection Law)
 - 严禁无脑清理 `rm -rf target`。核心 Rust 工程的 `target` 目录必须严格保留，享受秒级增量构建。
 - 涉及 Rust 构建命令，执行时给予充分的同步等待阈值（如 `WaitMsBeforeAsync: 10000`）。
+
+## 11. macOS LaunchAgent 开机自启与服务自愈铁律 (LaunchAgent Autostart Law)
+- **自启配置文件定点**：`~/Library/LaunchAgents/com.niuma.services.plist`
+- **自启拉起入口定点**：`/Users/hi/niuma/scripts/boot_autostart.sh`
+- **服务管理脚本定点**：`/Users/hi/niuma/scripts/manage_services.sh`（已软链接至 `bin/manage_services` 与 `~/.local/bin/manage_services`）
+- **自启策略**：配置 `AbandonProcessGroup: true`，开机登录后等待 5 秒网络初始化，随后全量静默拉起 6 大常驻守护进程（Mission Control 8999、Telegram Bot 8090、System Keeper、Proxy Checker、LAN File Server 8888、Hysteria 2），启动日志记录于 `/Users/hi/niuma/launchd_boot.log`。

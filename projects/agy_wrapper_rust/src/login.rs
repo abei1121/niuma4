@@ -21,6 +21,7 @@ pub fn handle_login_command(args: &[String]) -> anyhow::Result<bool> {
             let shared_dir = base_dir.join("shared_data");
 
             let _ = fs::create_dir_all(&cli_dir);
+            let _ = fs::create_dir_all(&shared_dir);
 
             // 共享 brain、历史记录等数据目录（软链接方式）
             let shared_items = [
@@ -33,6 +34,9 @@ pub fn handle_login_command(args: &[String]) -> anyhow::Result<bool> {
             for item in &shared_items {
                 let src = shared_dir.join(item);
                 let dst = cli_dir.join(item);
+                if !src.exists() && dst.exists() {
+                    let _ = fs::rename(&dst, &src);
+                }
                 if src.exists() {
                     let _ = fs::remove_file(&dst);
                     let _ = fs::remove_dir_all(&dst);

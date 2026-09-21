@@ -1,7 +1,7 @@
 // operations.rs - 运维操作：解除冷却、切换主账号
 
 use std::fs;
-use crate::prober::STATUS_JSON_PATH;
+use crate::prober::{get_all_account_ids, STATUS_JSON_PATH};
 
 /// 解除指定账号的冷却状态
 pub fn unblock_account(account_id: &str) -> Result<String, String> {
@@ -40,11 +40,21 @@ pub fn unblock_all() -> Result<String, String> {
 
 /// 切换主运行激活账号（按 index，0-based）
 pub fn switch_active(target_idx: usize) -> Result<String, String> {
+    let acc_ids = get_all_account_ids();
+    if target_idx >= acc_ids.len() {
+        return Err(format!(
+            "目标索引越界: 输入的是 {}，但当前有效账号总数为 {} (有效索引范围: 0..{})",
+            target_idx,
+            acc_ids.len(),
+            acc_ids.len().saturating_sub(1)
+        ));
+    }
+    let target_name = &acc_ids[target_idx];
     let content = fs::read_to_string(STATUS_JSON_PATH).map_err(|e| e.to_string())?;
     let mut val: serde_json::Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
 
     val["active_index"] = serde_json::json!(target_idx);
     let formatted = serde_json::to_string_pretty(&val).map_err(|e| e.to_string())?;
     fs::write(STATUS_JSON_PATH, formatted).map_err(|e| e.to_string())?;
-    Ok(format!("已将主运行账号切换为 index: {} (acc{})", target_idx, target_idx + 1))
+    Ok(format!("已将主运行账号切换为 index: {} ({})", target_idx, target_name))
 }

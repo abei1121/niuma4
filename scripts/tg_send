@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+    echo "Usage: tg_send 'message'"
+    exit 1
+fi
+curl -s --connect-timeout 2 --max-time 3 -X POST http://127.0.0.1:8090/send_tg --data-urlencode "msg=$1" > /dev/null || true
+echo "Sent to Telegram"

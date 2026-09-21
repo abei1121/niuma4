@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGY Agent OS & Strategy Mission Control</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+            },
+            dark: {
+              bg: '#080c14',
+              card: '#0f172a',
+              border: '#1e293b',
+              hover: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+  </style>
+</head>
+<body class="bg-[#080c14] text-gray-100 min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- Top Global Header -->
+  <header class="border-b border-gray-800/80 bg-[#0b1120]/95 backdrop-blur sticky top-0 z-40 px-6 py-3 flex items-center justify-between shadow-xl">
+    <div class="flex items-center space-x-3.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 via-cyan-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="text-base font-bold tracking-tight text-white">POLYMARKET AGENT OS</h1>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">Mission Control v4.0</span>
+        </div>
+        <p class="text-[11px] text-gray-400">实盘限价跟单 • 链上资产矩阵 • 大模型核心 • 系统守护管线</p>
+      </div>
+    </div>
+
+    <!-- Quick Status Badges & Refresh -->
+    <div class="flex items-center space-x-3">
+      <div class="hidden lg:flex items-center space-x-3 bg-gray-900/90 px-3 py-1.5 rounded-lg border border-gray-800 text-xs">
+        <div class="flex items-center space-x-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-gray-300">GTC 限价引擎 (1USD/5份)</span>
+        </div>
+        <div class="w-px h-3 bg-gray-700"></div>
+        <div class="flex items-center space-x-1.5">
+          <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+          <span class="text-gray-300">分身3号 旗舰驱动</span>
+        </div>
+      </div>
+
+      <button onclick="fetchAllData()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm transition flex items-center space-x-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>刷新数据</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Level 1: Clean Primary Categories (4 Big Domains) -->
+  <div class="border-b border-gray-800/80 bg-[#0f172a]/90 px-6">
+    <div class="flex space-x-8 text-xs font-bold uppercase tracking-wider">
+      <button onclick="switchCategory('trading')" id="cat-trading" class="cat-btn py-3.5 border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2">
+        <span>🎯 量化跟单与交易 (Trading Deck)</span>
+      </button>
+      <button onclick="switchCategory('accounts')" id="cat-accounts" class="cat-btn py-3.5 border-b-2 border-transparent text-gray-400 hover:text-gray-200 flex items-center space-x-2">
+        <span>💼 多链资产与多账号 (Accounts & Assets)</span>
+      </button>
+      <button onclick="switchCategory('brain')" id="cat-brain" class="cat-btn py-3.5 border-b-2 border-transparent text-gray-400 hover:text-gray-200 flex items-center space-x-2">
+        <span>🧠 Agent 大脑与能力库 (Brain & Skills)</span>
+      </button>
+      <button onclick="switchCategory('system')" id="cat-system" class="cat-btn py-3.5 border-b-2 border-transparent text-gray-400 hover:text-gray-200 flex items-center space-x-2">
+        <span>⚙️ 系统基座与运维 (System Ops)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Level 2: Sub-Nav Bar (Changes based on selected category) -->
+  <div class="border-b border-gray-800/60 bg-[#0b1120]/70 px-6 py-2">
+    <!-- Category 1 Sub-Nav: Trading Deck -->
+    <div id="subnav-trading" class="flex space-x-2 text-xs">
+      <button onclick="switchSubTab('smart-money')" id="subtab-smart-money" class="subtab-btn px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-medium">💎 聪明钱实盘跟单</button>
+      <button onclick="switchSubTab('early-bird')" id="subtab-early-bird" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">🦅 早鸟候选池 (Top 20)</button>
+      <button onclick="switchSubTab('polymarket')" id="subtab-polymarket" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">🏛️ Polymarket CLOB</button>
+      <button onclick="switchSubTab('predict-fun')" id="subtab-predict-fun" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">🔮 Predict.fun SDK</button>
+      <button onclick="switchSubTab('real-trades')" id="subtab-real-trades" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">📈 真实交易对账</button>
+      <button onclick="switchSubTab('blacklist')" id="subtab-blacklist" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">🛡️ 风控黑名单</button>
+    </div>
+
+    <!-- Category 2 Sub-Nav: Accounts & Assets -->
+    <div id="subnav-accounts" class="hidden flex space-x-2 text-xs">
+      <button onclick="switchSubTab('accounts-matrix')" id="subtab-accounts-matrix" class="subtab-btn px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-medium">💼 多账号全链资产矩阵</button>
+    </div>
+
+    <!-- Category 3 Sub-Nav: Brain & Skills -->
+    <div id="subnav-brain" class="hidden flex space-x-2 text-xs">
+      <button onclick="switchSubTab('agent-brain')" id="subtab-agent-brain" class="subtab-btn px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-medium">🧠 大模型大脑 & GEMINI.md</button>
+      <button onclick="switchSubTab('skills')" id="subtab-skills" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">⚡ 技能生态库 (12项)</button>
+      <button onclick="switchSubTab('wiki')" id="subtab-wiki" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">📚 Wiki 知识图谱 (280篇)</button>
+    </div>
+
+    <!-- Category 4 Sub-Nav: System Ops -->
+    <div id="subnav-system" class="hidden flex space-x-2 text-xs">
+      <button onclick="switchSubTab('overview')" id="subtab-overview" class="subtab-btn px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-medium">⚡ 全景态势与硬件</button>
+      <button onclick="switchSubTab('services')" id="subtab-services" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">⚙️ 常驻守护 & Crontab</button>
+      <button onclick="switchSubTab('logs')" id="subtab-logs" class="subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200">📜 全量实时日志流</button>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 p-6 space-y-6 max-w-7xl w-full mx-auto">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none px-4 py-3 rounded-xl glass-panel border border-emerald-500/30 text-emerald-300 text-xs font-semibold shadow-2xl flex items-center space-x-2">
+      <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      <span id="toast-msg">操作成功</span>
+    </div>
+
+    <!-- VIEW: SMART MONEY (TRADING DECK) -->
+    <div id="view-smart-money" class="space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">💎 聪明钱实盘跟单中枢 (Smart Money Strategy Hub)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">严格基于底层代码事实：GTC 限价挂单 • 1 USD 保底或 5 份额 • 0.10~0.85 价格风控 • 单标的最多 2 笔 • 6 分钟撤单</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+            跟单引擎：运行中 (GTC 限价)
+          </span>
+        </div>
+      </div>
+
+      <!-- Strategy Parameters Form (100% Code Facts) -->
+      <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-4">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+          <div>
+            <div class="text-xs font-bold text-gray-200">🛠️ 实盘跟单策略风控参数 (物理配置: /home/a/polymarket-bot/strategy_config.json)</div>
+            <div class="text-[11px] text-gray-400">遵循 Polymarket CLOB 最小 5 份额规范与大鳄建仓门槛，保存后免重启热生效</div>
+          </div>
+          <button onclick="saveSmartMoneyConfig()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 shadow-lg shadow-emerald-500/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+            <span>💾 保存并实时热生效跟单策略配置</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">跟单下单类型 (Order Type)</label>
+            <input id="cfg-order-type" type="text" readonly value="GTC 限价单 (Limit Order)" class="w-full px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg text-emerald-400 font-mono font-bold cursor-not-allowed">
+            <div class="text-[10px] text-gray-500 mt-1">1:1 限价跟随，严禁市价滑点亏损</div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">每笔下单份额规则 (Sizing)</label>
+            <input id="cfg-sizing-mode" type="text" readonly value="1 USD 保底 或 5 份额" class="w-full px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg text-emerald-400 font-mono font-bold cursor-not-allowed">
+            <div class="text-[10px] text-gray-500 mt-1">price≥0.20 买 5 份; price&lt;0.20 买 ceil(1/P) 份</div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">最低买入单价 (防粉尘攻击)</label>
+            <input id="cfg-min-price" type="number" step="0.01" value="0.10" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+            <div class="text-[10px] text-gray-500 mt-1">&lt; $0.10 的买单一律 0ms 直接丢弃</div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">最高买入限价 (防追高熔断)</label>
+            <input id="cfg-max-price" type="number" step="0.01" value="0.85" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+            <div class="text-[10px] text-gray-500 mt-1">&gt; $0.85 熔断跳过，防止劣质盈亏比</div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">巨鲸盘口持仓门槛 (USDC)</label>
+            <input id="cfg-whale-pos" type="number" step="10" value="120.0" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+            <div class="text-[10px] text-gray-500 mt-1">大鳄盘口持仓 ≥ $120 且 60s 内有建仓</div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">单标的最大跟单笔数</label>
+            <input id="cfg-max-orders" type="number" step="1" value="2" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+            <div class="text-[10px] text-gray-500 mt-1">我方在同一盘口累计最多跟发 2 笔</div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">未成交挂单超时撤单 (秒)</label>
+            <input id="cfg-cancel-timeout" type="number" step="30" value="360" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+            <div class="text-[10px] text-gray-500 mt-1">6 分钟 (360s) 未撮合自动撤单释放资金</div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 font-semibold mb-1">成交后自动限价止盈 (USDC)</label>
+            <input id="cfg-take-profit" type="number" step="0.01" value="0.99" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+            <div class="text-[10px] text-gray-500 mt-1">买单撮合后自动以 $0.99 挂限价单止盈</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Whitelist Custom Whale -->
+      <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+        <div class="text-xs font-bold text-gray-300">手动录入实盘跟单巨鲸 (/home/a/smart_wallets.json)</div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <input id="input-new-wallet-addr" type="text" placeholder="0x... (42位 EVM 钱包地址)" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500 md:col-span-2">
+          <input id="input-new-wallet-name" type="text" placeholder="巨鲸别名 (例如: CS2-Sniper-Whale)" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500">
+          <button onclick="addCustomWhale()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">
+            + 授权并写入实盘白名单
+          </button>
+        </div>
+      </div>
+
+      <!-- True Smart Wallets Table -->
+      <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden">
+        <div class="p-4 bg-gray-900/60 border-b border-gray-800 flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-bold text-gray-200">当前实盘跟单白名单库 (/home/a/smart_wallets.json)</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-bold" id="smart-whitelist-count-badge">8 位实盘大鳄</span>
+          </div>
+          <span class="text-[11px] text-gray-500">真实成交获利知情巨鲸矩阵 (支持随时自由移出)</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/80 text-gray-400 uppercase font-semibold border-b border-gray-800">
+              <tr>
+                <th class="py-3 px-4">序号</th>
+                <th class="py-3 px-4">巨鲸标签 / 别名</th>
+                <th class="py-3 px-4">钱包公钥地址</th>
+                <th class="py-3 px-4">主攻垂直领域</th>
+                <th class="py-3 px-4">已结清净利润</th>
+                <th class="py-3 px-4">胜率</th>
+                <th class="py-3 px-4">盈亏比</th>
+                <th class="py-3 px-4">风控价格区间</th>
+                <th class="py-3 px-4 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="smart-money-table" class="divide-y divide-gray-800/60 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: EARLY BIRD POOL -->
+    <div id="view-early-bird" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">早鸟敏锐内幕【待选候选池】(Top 20 动态淘汰)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">算法与大模型从链上挖掘出的内幕先知候选 • 点击「+ 加入跟单」即可写入实盘白名单</p>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/80 text-gray-400 uppercase font-semibold border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">排名</th>
+                <th class="py-3.5 px-4">候选地址</th>
+                <th class="py-3.5 px-4">领域画像</th>
+                <th class="py-3.5 px-4">评级</th>
+                <th class="py-3.5 px-4">胜率</th>
+                <th class="py-3.5 px-4">均价 (获胜倍数)</th>
+                <th class="py-3.5 px-4">早期体量</th>
+                <th class="py-3.5 px-4">领先时长</th>
+                <th class="py-3.5 px-4">综合评分</th>
+                <th class="py-3.5 px-4 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="early-bird-table" class="divide-y divide-gray-800/60 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: POLYMARKET CLOB -->
+    <div id="view-polymarket" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Polymarket CLOB SDK 交易中枢 (V2 EIP-712)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">本地 Node Sidecar (端口 8088) 极速高并发交易与挂单通道</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-2">
+          <div class="text-xs font-semibold text-gray-400">USDC 交易可用余额 (Real)</div>
+          <div class="text-2xl font-extrabold text-emerald-400" id="poly-deck-usdc">1.00 USDC</div>
+          <div class="text-[11px] text-gray-500">Polygon Native (0x3c49...3359)</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-2">
+          <div class="text-xs font-semibold text-gray-400">POL 燃料余额 (Gas)</div>
+          <div class="text-2xl font-extrabold text-cyan-400" id="poly-deck-pol">12.78 POL</div>
+          <div class="text-[11px] text-gray-500">足额支持 10,000+ 笔挂撤单</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-2">
+          <div class="text-xs font-semibold text-gray-400">CLOB 侧车状态</div>
+          <div class="flex items-center space-x-2 pt-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-base font-bold text-emerald-400">127.0.0.1:8088 在线</span>
+          </div>
+          <div class="text-[11px] text-gray-500">EIP-712 签名就绪</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3 flex flex-col justify-between">
+          <div class="text-xs font-semibold text-gray-400">快捷交易控制</div>
+          <div class="flex space-x-2">
+            <button onclick="triggerPolyTestOrder()" class="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">
+              ⚡ 签名测速
+            </button>
+            <button onclick="triggerCancelAll()" class="px-3 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg text-xs font-semibold transition">
+              🛑 一键全撤
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+        <div class="text-xs font-bold text-gray-300">CLOB 交易通道日志流</div>
+        <pre id="poly-clob-output" class="text-xs font-mono text-emerald-400 bg-gray-900/90 p-4 rounded-xl h-40 overflow-y-auto custom-scrollbar">等待指令触发...</pre>
+      </div>
+    </div>
+
+    <!-- VIEW: PREDICT.FUN SDK -->
+    <div id="view-predict-fun" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Predict.fun SDK 预测市场通道 (BNB Chain)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">官方 @predictdotfun/sdk 接入与 BSC 预测市场多链扩展中枢</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-2">
+          <div class="text-xs font-semibold text-gray-400">USDT 保证金余额 (Real)</div>
+          <div class="text-2xl font-extrabold text-cyan-400" id="pred-deck-usdt">0.00 USDT</div>
+          <div class="text-[11px] text-gray-500">BSC Mainnet (0x55d3...7955)</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-2">
+          <div class="text-xs font-semibold text-gray-400">BNB 燃料余额 (Gas)</div>
+          <div class="text-2xl font-extrabold text-yellow-400" id="pred-deck-bnb">0.00005 BNB</div>
+          <div class="text-[11px] text-gray-500">BSC DataSeed Direct</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-2">
+          <div class="text-xs font-semibold text-gray-400">SDK 包状态</div>
+          <div class="flex items-center space-x-2 pt-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
+            <span class="text-base font-bold text-cyan-400">@predictdotfun/sdk 就绪</span>
+          </div>
+          <div class="text-[11px] text-gray-500">Ethers V6 驱动</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3 flex flex-col justify-between">
+          <div class="text-xs font-semibold text-gray-400">通道探针测试</div>
+          <button onclick="triggerPredictFunProbe()" class="w-full px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold transition">
+            🔮 发起 Predict.fun 探针测试
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+        <div class="text-xs font-bold text-gray-300">Predict.fun 响应日志</div>
+        <pre id="predict-fun-output" class="text-xs font-mono text-cyan-400 bg-gray-900/90 p-4 rounded-xl h-40 overflow-y-auto custom-scrollbar">等待指令触发...</pre>
+      </div>
+    </div>
+
+    <!-- VIEW: REAL TRADES -->
+    <div id="view-real-trades" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">真实链上跟单与交易对账 (物理落盘)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">物理路径: /home/a/real_trades_archive/real_trades_history.json</p>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden">
+        <div class="overflow-x-auto max-h-[550px] custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/80 text-gray-400 uppercase font-semibold border-b border-gray-800 sticky top-0">
+              <tr>
+                <th class="py-3 px-4">成交时间 (CST)</th>
+                <th class="py-3 px-4">盘口标题</th>
+                <th class="py-3 px-4">方向</th>
+                <th class="py-3 px-4">价格</th>
+                <th class="py-3 px-4">金额 (USDC)</th>
+                <th class="py-3 px-4">状态</th>
+                <th class="py-3 px-4 text-right">实现盈亏</th>
+              </tr>
+            </thead>
+            <tbody id="real-trades-table" class="divide-y divide-gray-800/60 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: BLACKLIST -->
+    <div id="view-blacklist" class="hidden space-y-4">
+      <div>
+        <h2 class="text-base font-bold text-white">风控隔离黑名单矩阵</h2>
+        <p class="text-xs text-gray-400 mt-0.5">被拒绝的散户运气单、负 PnL 赌徒、极速噪音盘及做市商记录</p>
+      </div>
+
+      <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/80 text-gray-400 uppercase font-semibold border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">隔离地址</th>
+                <th class="py-3.5 px-4">拦截归因 (大模型 / 规则)</th>
+                <th class="py-3.5 px-4">下注盘口样本</th>
+                <th class="py-3.5 px-4">拦截时间</th>
+              </tr>
+            </thead>
+            <tbody id="blacklist-table" class="divide-y divide-gray-800/60 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: ACCOUNTS MATRIX -->
+    <div id="view-accounts-matrix" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">多账号矩阵管理 (Multi-Account Matrix)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">跨 Polymarket (Polygon) 与 Predict.fun (BSC) 多钱包多通道资产矩阵与状态机</p>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="syncAllBalances()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold rounded-lg border border-gray-700 transition flex items-center space-x-1">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>一键同步全链真实余额</span>
+          </button>
+          <button onclick="openAddAccountModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition">
+            + 添加新账号
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/80 text-gray-400 uppercase font-semibold border-b border-gray-800">
+              <tr>
+                <th class="py-3 px-4">账号标签</th>
+                <th class="py-3 px-4">所属平台</th>
+                <th class="py-3 px-4">EOA 钱包地址</th>
+                <th class="py-3 px-4">金库/代理地址</th>
+                <th class="py-3 px-4">主稳定币余额</th>
+                <th class="py-3 px-4">Gas 燃料余额</th>
+                <th class="py-3 px-4">活跃状态</th>
+                <th class="py-3 px-4 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="accounts-table" class="divide-y divide-gray-800/60 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: AGENT BRAIN -->
+    <div id="view-agent-brain" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Agent 核心大脑与系统法则管理</h2>
+          <p class="text-xs text-gray-400 mt-0.5">多账号轮换矩阵 • GEMINI.md 核心法则查看与在线热编辑 • AGY 实时交互终端</p>
+        </div>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+        <div class="text-xs font-bold text-gray-300 uppercase tracking-wider">大模型多账号动态轮换池 (/root/.gemini_accounts/status.json)</div>
+        <div id="rotation-pool-display" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="text-xs font-bold text-gray-200">系统核心法则与行为约束 (/home/a/GEMINI.md)</div>
+            <div class="text-[11px] text-gray-400">分身身份、Rust 语言强制、无表情符号、防断网纪律等最高准则</div>
+          </div>
+          <button onclick="saveGeminiRules()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center space-x-1">
+            <span>保存并生效 GEMINI.md</span>
+          </button>
+        </div>
+        <textarea id="gemini-rules-editor" class="w-full h-80 bg-gray-900/90 text-gray-200 font-mono text-xs p-4 rounded-xl border border-gray-700 focus:outline-none focus:border-emerald-500 custom-scrollbar"></textarea>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border border-gray-800 space-y-3">
+        <div class="text-xs font-bold text-gray-300">AGY 原生指令交互终端 (Direct Prompt Execution)</div>
+        <div class="flex space-x-2">
+          <input id="agent-prompt-input" type="text" placeholder="向 AGY 引擎发送指令 (例如: 总结当前所有盘口状态，或触发系统体检)" class="flex-1 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-purple-500">
+          <button onclick="sendAgentPrompt()" id="btn-agent-prompt" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition">
+            执行指令
+          </button>
+        </div>
+        <pre id="agent-prompt-output" class="text-xs font-mono text-gray-300 bg-gray-900/90 p-4 rounded-xl h-48 overflow-y-auto custom-scrollbar whitespace-pre-wrap">等待指令输入...</pre>
+      </div>
+    </div>
+
+    <!-- VIEW: SKILLS -->
+    <div id="view-skills" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Agent 技能与能力矩阵生态 (Skills Ecosystem)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">目录: /root/.gemini_accounts/acc3/.gemini/config/skills/ (支持在线查看与代码热编辑)</p>
+        </div>
+      </div>
+
+      <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- VIEW: WIKI -->
+    <div id="view-wiki" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Wiki 知识图谱与策略记忆库 (/home/a/wiki)</h2>
+          <p class="text-xs text-gray-400 mt-0.5">多小文件架构 • 概念链接 • 在线查看与热保存</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass-panel p-4 rounded-2xl border border-gray-800 space-y-2 h-[500px] overflow-y-auto custom-scrollbar">
+          <div class="text-xs font-bold text-gray-300 mb-2">Markdown 笔记文件列表</div>
+          <div id="wiki-file-list" class="space-y-1 text-xs">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="glass-panel p-4 rounded-2xl border border-gray-800 md:col-span-2 space-y-3 flex flex-col h-[500px]">
+          <div class="flex justify-between items-center">
+            <span id="wiki-current-file-label" class="text-xs font-mono font-bold text-emerald-400 truncate">选择文件进行查看与编辑</span>
+            <button onclick="saveWikiFile()" id="btn-save-wiki" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold disabled:opacity-50">
+              保存修改
+            </button>
+          </div>
+          <textarea id="wiki-editor" class="flex-1 w-full bg-gray-900/90 text-gray-200 font-mono text-xs p-3 rounded-xl border border-gray-700 focus:outline-none focus:border-emerald-500 custom-scrollbar"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: OVERVIEW & HARDWARE -->
+    <div id="view-overview" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">实盘跟单巨鲸白名单</div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <div id="kpi-whitelist-count" class="text-3xl font-extrabold text-emerald-400">8</div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">获利千万级大鳄</span>
+          </div>
+          <div class="mt-2 text-xs text-gray-500">单源: /home/a/smart_wallets.json</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Polymarket 真实 USDC</div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <div id="kpi-poly-usdc" class="text-2xl font-extrabold text-emerald-400">1.00 USDC</div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">POL: 12.78</span>
+          </div>
+          <div class="mt-2 text-xs text-gray-500">BSC: <span id="kpi-pred-usdt" class="text-gray-300">0.00 USDT</span></div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">早鸟候选池席位</div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <div id="kpi-early-count" class="text-3xl font-extrabold text-cyan-400">0</div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Top 20 算法池</span>
+          </div>
+          <div class="mt-2 text-xs text-gray-500">自动过滤加密与散户</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-gray-800">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">实盘累计实现 PnL</div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <div id="kpi-real-pnl" class="text-3xl font-extrabold text-emerald-400">$0.00</div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">胜率 61.4%</span>
+          </div>
+          <div class="mt-2 text-xs text-gray-500">319 笔物理落盘对账</div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-6 rounded-2xl border border-gray-800 space-y-4">
+        <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider">底层硬件资源与守护基座</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+          <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-800">
+            <div class="text-gray-400">物理内存占用</div>
+            <div class="mt-1 text-lg font-bold text-gray-200" id="sys-mem">-- / -- MB</div>
+            <div class="w-full bg-gray-700 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div id="sys-mem-bar" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-800">
+            <div class="text-gray-400">根磁盘可用空间</div>
+            <div class="mt-1 text-lg font-bold text-emerald-400" id="sys-disk">-- GB 可用 (80GB+)</div>
+            <div class="text-gray-500 mt-1">使用率: <span id="sys-disk-pct">--%</span></div>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-800">
+            <div class="text-gray-400">系统连续运行时长</div>
+            <div class="mt-1 text-lg font-bold text-gray-200" id="sys-uptime">-- 小时</div>
+            <div class="text-emerald-400 mt-1">● 运行稳定无宕机</div>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-800">
+            <div class="text-gray-400">大模型轮换池</div>
+            <div class="mt-1 text-lg font-bold text-purple-400">Gemini 3.7 旗舰</div>
+            <div class="text-gray-500 mt-1">acc1/acc2/acc3 热备</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: SERVICES & CRONTAB -->
+    <div id="view-services" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">系统级常驻守护服务与 Crontab 定时管线</h2>
+          <p class="text-xs text-gray-400 mt-0.5">进程资源监控 • Systemd 守护 • Crontab 任务一键手动执行</p>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden">
+        <div class="p-4 bg-gray-900/60 border-b border-gray-800">
+          <span class="text-xs font-bold text-gray-200">系统核心常驻守护进程</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/80 text-gray-400 uppercase font-semibold border-b border-gray-800">
+              <tr>
+                <th class="py-3 px-4">服务名称</th>
+                <th class="py-3 px-4">运行状态</th>
+                <th class="py-3 px-4">PID</th>
+                <th class="py-3 px-4">CPU 占用</th>
+                <th class="py-3 px-4">物理内存</th>
+                <th class="py-3 px-4 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="daemons-table" class="divide-y divide-gray-800/60 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden">
+        <div class="p-4 bg-gray-900/60 border-b border-gray-800 flex justify-between items-center">
+          <span class="text-xs font-bold text-gray-200">Crontab 主定时调度任务矩阵 (crontab -l)</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/80 text-gray-400 uppercase font-semibold border-b border-gray-800">
+              <tr>
+                <th class="py-3 px-4">调度周期 (Cron)</th>
+                <th class="py-3 px-4">执行命令</th>
+                <th class="py-3 px-4">日志路径</th>
+                <th class="py-3 px-4 text-right">触发操作</th>
+              </tr>
+            </thead>
+            <tbody id="crontab-table" class="divide-y divide-gray-800/60 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: LOGS -->
+    <div id="view-logs" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">系统全量实时执行日志流</h2>
+          <p class="text-xs text-gray-400 mt-0.5">早鸟批处理 • TG Bot • 每日审计 • System Keeper</p>
+        </div>
+        <div class="flex space-x-2 text-xs">
+          <button onclick="fetchLogs('batch')" id="log-btn-batch" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-medium">早鸟批处理</button>
+          <button onclick="fetchLogs('tg')" id="log-btn-tg" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700">TG Bot</button>
+          <button onclick="fetchLogs('audit')" id="log-btn-audit" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700">每日审计</button>
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl border border-gray-800">
+        <pre id="log-content" class="text-xs font-mono text-gray-300 h-96 overflow-y-auto custom-scrollbar whitespace-pre-wrap leading-relaxed">正在拉取日志...</pre>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Add Account Modal -->
+  <div id="account-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-[#111827] border border-gray-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+          <span>+ 录入新操盘/跟单账号</span>
+        </h3>
+        <button onclick="closeAccountModal()" class="text-gray-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-gray-400 font-semibold mb-1">账号标签 (Label)</label>
+          <input id="modal-acc-label" type="text" placeholder="例如: Polymarket 套利子号 #2" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-gray-400 font-semibold mb-1">目标平台 (Platform)</label>
+          <select id="modal-acc-platform" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-indigo-500">
+            <option value="Polymarket">Polymarket (Polygon 链)</option>
+            <option value="Predict.fun">Predict.fun (BSC 链)</option>
+            <option value="Dual">Dual 双链全支持</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-gray-400 font-semibold mb-1">EOA 钱包公钥地址</label>
+          <input id="modal-acc-eoa" type="text" placeholder="0x... (42位 EVM 地址)" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-gray-400 font-semibold mb-1">金库/存款 Proxy 地址 (可选)</label>
+          <input id="modal-acc-proxy" type="text" placeholder="0x... (Polymarket Deposit Address)" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button onclick="submitNewAccount()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold">确认录入并同步余额</button>
+        <button onclick="closeAccountModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skill Edit Modal -->
+  <div id="skill-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-[#111827] border border-gray-700 rounded-2xl max-w-3xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold text-xs">Skill 技能元数据</span>
+          <h3 id="modal-skill-title" class="text-sm font-mono text-white font-bold truncate"></h3>
+        </div>
+        <button onclick="closeSkillModal()" class="text-gray-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="space-y-2">
+        <textarea id="modal-skill-content" class="w-full h-80 bg-gray-900/90 text-gray-200 font-mono text-xs p-3 rounded-xl border border-gray-700 focus:outline-none focus:border-cyan-500 custom-scrollbar"></textarea>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button onclick="saveSkillContent()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold">保存 SKILL.md</button>
+        <button onclick="closeSkillModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- L3 Intel Modal / Drawer -->
+  <div id="intel-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-[#111827] border border-gray-700 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold text-xs">AGY L3 尽调画像</span>
+          <h3 id="modal-wallet" class="text-sm font-mono text-emerald-400 font-bold truncate max-w-md"></h3>
+        </div>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3 bg-gray-900/80 rounded-xl border border-gray-800">
+          <div class="text-gray-400 font-semibold mb-1">战术意图与画像摘要</div>
+          <p id="modal-summary" class="text-gray-200 leading-relaxed"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 bg-gray-900/80 rounded-xl border border-gray-800">
+            <div class="text-gray-400 font-semibold mb-1">跟单与仓位建议</div>
+            <p id="modal-copy" class="text-emerald-300"></p>
+          </div>
+          <div class="p-3 bg-gray-900/80 rounded-xl border border-gray-800">
+            <div class="text-gray-400 font-semibold mb-1">擅长赛道与确信度</div>
+            <p id="modal-domain" class="text-cyan-300"></p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-gray-900/80 rounded-xl border border-gray-800">
+          <div class="text-gray-400 font-semibold mb-1">风险警告点 (Risk Points)</div>
+          <ul id="modal-risks" class="list-disc list-inside text-amber-300/90 space-y-1"></ul>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button id="modal-add-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold">加入聪明钱跟单</button>
+        <button onclick="closeModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let globalEarlyProfiles = [];
+    let currentLogTab = 'batch';
+    let currentSkillEditing = '';
+    let currentWikiEditing = '';
+    let activeCategory = 'trading';
+    let activeSubTab = 'smart-money';
+
+    const CATEGORY_DEFAULT_SUBTABS = {
+      'trading': 'smart-money',
+      'accounts': 'accounts-matrix',
+      'brain': 'agent-brain',
+      'system': 'overview'
+    };
+
+    const ALL_SUB_VIEWS = [
+      'smart-money', 'early-bird', 'polymarket', 'predict-fun', 'real-trades', 'blacklist',
+      'accounts-matrix',
+      'agent-brain', 'skills', 'wiki',
+      'overview', 'services', 'logs'
+    ];
+
+    function switchCategory(catId) {
+      activeCategory = catId;
+      ['trading', 'accounts', 'brain', 'system'].forEach(c => {
+        const btn = document.getElementById(`cat-${c}`);
+        const subnav = document.getElementById(`subnav-${c}`);
+        if (btn) {
+          if (c === catId) {
+            btn.className = 'cat-btn py-3.5 border-b-2 border-emerald-500 text-emerald-400 flex items-center space-x-2';
+          } else {
+            btn.className = 'cat-btn py-3.5 border-b-2 border-transparent text-gray-400 hover:text-gray-200 flex items-center space-x-2';
+          }
+        }
+        if (subnav) {
+          if (c === catId) subnav.classList.remove('hidden');
+          else subnav.classList.add('hidden');
+        }
+      });
+
+      const targetSubTab = CATEGORY_DEFAULT_SUBTABS[catId] || 'smart-money';
+      switchSubTab(targetSubTab);
+    }
+
+    function switchSubTab(tabId) {
+      activeSubTab = tabId;
+      ALL_SUB_VIEWS.forEach(v => {
+        const viewEl = document.getElementById(`view-${v}`);
+        if (viewEl) viewEl.classList.add('hidden');
+      });
+
+      document.querySelectorAll('.subtab-btn').forEach(btn => {
+        btn.className = 'subtab-btn px-3 py-1.5 rounded-lg bg-gray-900 text-gray-400 hover:text-gray-200';
+      });
+
+      const activeView = document.getElementById(`view-${tabId}`);
+      if (activeView) activeView.classList.remove('hidden');
+
+      const activeBtn = document.getElementById(`subtab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = 'subtab-btn px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-medium';
+      }
+
+      if (tabId === 'smart-money') fetchSmartMoney();
+      if (tabId === 'early-bird') fetchEarlyBird();
+      if (tabId === 'accounts-matrix') fetchAccounts();
+      if (tabId === 'agent-brain') fetchAgentBrain();
+      if (tabId === 'skills') fetchSkills();
+      if (tabId === 'services') fetchServices();
+      if (tabId === 'wiki') fetchWiki();
+      if (tabId === 'polymarket') fetchPolymarket();
+      if (tabId === 'predict-fun') fetchPredictFun();
+      if (tabId === 'logs') fetchLogs(currentLogTab);
+      if (tabId === 'overview') fetchSystem();
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      el.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        el.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    async function fetchAllData() {
+      fetchSystem();
+      fetchSmartMoney();
+      fetchEarlyBird();
+      fetchAccounts();
+      fetchAgentBrain();
+      fetchSkills();
+      fetchServices();
+      fetchBlacklist();
+      fetchRealTrades();
+    }
+
+    async function fetchSystem() {
+      try {
+        const res = await fetch('/api/system');
+        const data = await res.json();
+        document.getElementById('sys-mem').textContent = `${data.memory_used_mb} / ${data.memory_total_mb} MB`;
+        const pct = Math.round((data.memory_used_mb / data.memory_total_mb) * 100);
+        document.getElementById('sys-mem-bar').style.width = `${pct}%`;
+        document.getElementById('sys-disk').textContent = `${data.disk_avail_gb} GB 可用 (${data.disk_used_gb}/${data.disk_total_gb} GB)`;
+        document.getElementById('sys-disk-pct').textContent = `${data.disk_used_pct}%`;
+        document.getElementById('sys-uptime').textContent = `${data.uptime_hours} 小时`;
+      } catch (e) { console.error(e); }
+    }
+
+    /* --- FACT-BASED SMART MONEY HANDLERS --- */
+    async function fetchSmartMoney() {
+      try {
+        const res = await fetch('/api/smart-money');
+        const data = await res.json();
+        
+        document.getElementById('kpi-whitelist-count').textContent = data.whitelist.length;
+        const badge = document.getElementById('smart-whitelist-count-badge');
+        if (badge) badge.textContent = `${data.whitelist.length} 位实盘大鳄`;
+
+        // Fill Strategy Config Form with 100% Code Facts
+        if (data.config) {
+          const c = data.config;
+          document.getElementById('cfg-min-price').value = c.min_price || 0.10;
+          document.getElementById('cfg-max-price').value = c.max_buy_price || 0.85;
+          document.getElementById('cfg-whale-pos').value = c.whale_min_position_usd || 120.0;
+          document.getElementById('cfg-max-orders').value = c.max_orders_per_market || 2;
+          document.getElementById('cfg-cancel-timeout').value = c.unfilled_cancel_timeout_sec || 360;
+          document.getElementById('cfg-take-profit').value = c.take_profit_price || 0.99;
+        }
+
+        // Render Whitelist Table from /home/a/smart_wallets.json
+        const tbody = document.getElementById('smart-money-table');
+        if (data.whitelist.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-gray-500">暂无实盘巨鲸白名单 (可在下方手动录入或从早鸟候选池一键添加)</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.whitelist.map((w, idx) => {
+          const profitFmt = w.net_profit_usd > 1000000 
+            ? `$${(w.net_profit_usd / 1000000).toFixed(2)}M` 
+            : (w.net_profit_usd > 1000 ? `$${(w.net_profit_usd / 1000).toFixed(1)}K` : `$${w.net_profit_usd.toFixed(0)}`);
+          
+          let domainColor = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+          if (w.domain.includes('体育') || w.domain.includes('NBA') || w.domain.includes('足球')) domainColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+          if (w.domain.includes('电竞') || w.domain.includes('英雄联盟')) domainColor = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+
+          return `
+            <tr class="hover:bg-gray-800/40 transition">
+              <td class="py-3 px-4 text-gray-400 font-bold">#${idx + 1}</td>
+              <td class="py-3 px-4 font-sans">
+                <div class="font-bold text-gray-200">${w.name || w.pseudonym}</div>
+                <div class="text-[10px] text-gray-500 truncate max-w-xs" title="${w.note}">${w.note || '--'}</div>
+              </td>
+              <td class="py-3 px-4 font-mono text-emerald-300 font-bold">
+                <div class="flex items-center space-x-1">
+                  <span>${w.address.substring(0, 8)}...${w.address.substring(w.address.length - 6)}</span>
+                  <a href="https://polymarket.com/profile/${w.address}" target="_blank" class="text-gray-500 hover:text-cyan-400" title="在 Polymarket 打开">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </a>
+                </div>
+              </td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] border font-sans ${domainColor}">${w.domain}</span></td>
+              <td class="py-3 px-4 font-bold text-emerald-400">${profitFmt}</td>
+              <td class="py-3 px-4 text-cyan-300 font-bold">${w.win_rate.toFixed(1)}%</td>
+              <td class="py-3 px-4 text-pink-400 font-bold">${w.profit_factor ? w.profit_factor.toFixed(2) : '--'}</td>
+              <td class="py-3 px-4 text-gray-300">$${(w.min_price || 0.1).toFixed(2)} ~ $${(w.max_price || 0.85).toFixed(2)}</td>
+              <td class="py-3 px-4 text-right">
+                <button onclick="removeWhale('${w.address}')" class="px-2.5 py-1 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white rounded text-[11px] font-sans font-medium transition">
+                  移除授权
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function saveSmartMoneyConfig() {
+      const minPrice = parseFloat(document.getElementById('cfg-min-price').value) || 0.10;
+      const maxPrice = parseFloat(document.getElementById('cfg-max-price').value) || 0.85;
+      const whalePos = parseFloat(document.getElementById('cfg-whale-pos').value) || 120.0;
+      const maxOrders = parseInt(document.getElementById('cfg-max-orders').value) || 2;
+      const cancelTimeout = parseInt(document.getElementById('cfg-cancel-timeout').value) || 360;
+      const takeProfit = parseFloat(document.getElementById('cfg-take-profit').value) || 0.99;
+
+      try {
+        const res = await fetch('/api/smart-money/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_type: "GTC_LIMIT (GTC限价单)",
+            sizing_mode: "1_USD_OR_5_SHARES (1 USD保底 或 5份额)",
+            min_price: minPrice,
+            max_buy_price: maxPrice,
+            whale_min_position_usd: whalePos,
+            max_orders_per_market: maxOrders,
+            unfilled_cancel_timeout_sec: cancelTimeout,
+            take_profit_price: takeProfit
+          })
+        });
+        const d = await res.json();
+        if (d.success) {
+          showToast('跟单风控策略已持久化写入 /home/a/polymarket-bot/strategy_config.json');
+          fetchSmartMoney();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function addCustomWhale() {
+      const addr = document.getElementById('input-new-wallet-addr').value.trim();
+      const name = document.getElementById('input-new-wallet-name').value.trim();
+      if (!addr) {
+        alert('请填入 42 位 EVM 钱包地址');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/smart-money/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: addr,
+            name: name || null,
+            domain: "手动录入实盘聪明钱",
+            min_price: 0.10,
+            max_price: 0.85,
+            note: "命主亲自授权录入"
+          })
+        });
+        const d = await res.json();
+        if (d.success) {
+          showToast(`已成功将巨鲸 ${addr.substring(0, 10)}... 写入实盘白名单`);
+          document.getElementById('input-new-wallet-addr').value = '';
+          document.getElementById('input-new-wallet-name').value = '';
+          fetchSmartMoney();
+        } else {
+          alert(`录入失败: ${d.error}`);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function removeWhale(wallet) {
+      try {
+        const res = await fetch('/api/smart-money/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wallet })
+        });
+        const d = await res.json();
+        if (d.success) {
+          showToast(`已从实盘白名单移除: ${wallet.substring(0, 10)}...`);
+          fetchSmartMoney();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    /* --- EARLY BIRD CANDIDATE HANDLERS --- */
+    async function fetchEarlyBird() {
+      try {
+        const res = await fetch('/api/early-bird');
+        const profiles = await res.json();
+        globalEarlyProfiles = profiles;
+        document.getElementById('kpi-early-count').textContent = profiles.length;
+
+        const tbody = document.getElementById('early-bird-table');
+        if (profiles.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-gray-500">暂无通过审计的早鸟候选地址</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = profiles.map((p, idx) => {
+          const rating = p.l3_intel ? p.l3_intel.rating : 'A';
+          const domain = p.l3_intel ? p.l3_intel.domain : (p.tags[0] || '综合先知');
+          const multiplier = p.avg_entry_price > 0 ? (1 / p.avg_entry_price).toFixed(1) + 'x' : '1x';
+          
+          let domainBadgeColor = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+          if (domain.includes('体育') || domain.includes('足球')) domainBadgeColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+          if (domain.includes('电竞') || domain.includes('赛事')) domainBadgeColor = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+
+          return `
+            <tr class="hover:bg-gray-800/40 transition">
+              <td class="py-3 px-4 font-bold text-emerald-400">#${idx + 1}</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-gray-200 font-mono">${p.wallet.substring(0, 8)}...${p.wallet.substring(p.wallet.length - 6)}</span>
+                  <a href="https://polymarket.com/profile/${p.wallet}" target="_blank" class="text-gray-500 hover:text-emerald-400" title="在 Polymarket 打开">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </a>
+                </div>
+              </td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] border font-sans ${domainBadgeColor}">${domain}</span></td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">${rating}</span></td>
+              <td class="py-3 px-4 text-emerald-400 font-bold">${(p.win_rate * 100).toFixed(1)}%</td>
+              <td class="py-3 px-4 text-gray-300">$${p.avg_entry_price.toFixed(2)} <span class="text-gray-500">(${multiplier})</span></td>
+              <td class="py-3 px-4 font-bold text-gray-200">$${Math.round(p.total_early_volume_usd)}</td>
+              <td class="py-3 px-4 text-blue-400">${p.avg_lead_hours.toFixed(1)}h</td>
+              <td class="py-3 px-4 font-bold text-pink-400">${p.composite_score.toFixed(1)}</td>
+              <td class="py-3 px-4 text-right space-x-1">
+                <button onclick="addEarlyBirdToSmartWallets('${p.wallet}', '${domain}')" class="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white rounded text-[11px] font-sans font-medium transition" title="将此早鸟推入实盘跟单白名单">
+                  + 加入跟单
+                </button>
+                <button onclick="openIntelModal(${idx})" class="px-2 py-1 bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white rounded text-[11px] font-sans font-medium transition">
+                  画像
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function addEarlyBirdToSmartWallets(wallet, domain) {
+      try {
+        const res = await fetch('/api/smart-money/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: wallet,
+            name: `EarlyBird_${wallet.substring(2,8)}`,
+            domain: domain,
+            min_price: 0.10,
+            max_price: 0.85,
+            note: "早鸟 Top20 算法池一键授权推入"
+          })
+        });
+        const d = await res.json();
+        if (d.success) {
+          showToast(`已成功推入实盘白名单: ${wallet.substring(0, 10)}...`);
+          fetchSmartMoney();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    /* --- AGENT BRAIN HANDLERS --- */
+    async function fetchAgentBrain() {
+      try {
+        const res = await fetch('/api/agent/status');
+        const data = await res.json();
+        document.getElementById('gemini-rules-editor').value = data.gemini_rules;
+
+        const poolBox = document.getElementById('rotation-pool-display');
+        if (data.rotation && data.rotation.accounts) {
+          const accs = data.rotation.accounts;
+          poolBox.innerHTML = Object.keys(accs).map((accName, idx) => {
+            const isCurrent = idx === data.rotation.active_index;
+            const blocked = accs[accName].blocked_until;
+            const isCooling = blocked && blocked !== '0001-01-01T00:00:00Z';
+
+            const activeBadge = isCurrent 
+              ? '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">主运行中 (Active)</span>'
+              : (isCooling ? '<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">冷却中</span>' : '<span class="px-2 py-0.5 rounded bg-gray-800 text-gray-400">热备就绪</span>');
+
+            return `
+              <div class="p-3.5 rounded-xl bg-gray-900/80 border ${isCurrent ? 'border-emerald-500/50' : 'border-gray-800'} space-y-1.5">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-gray-200 font-mono">${accName.toUpperCase()}</span>
+                  ${activeBadge}
+                </div>
+                <div class="text-[11px] text-gray-400">路径: /root/.gemini_accounts/${accName}</div>
+                <div class="text-[11px] text-purple-400">模型: Gemini 3.7 Flash High</div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function saveGeminiRules() {
+      const content = document.getElementById('gemini-rules-editor').value;
+      try {
+        const res = await fetch('/api/agent/gemini-rules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        const d = await res.json();
+        if (d.success) showToast('GEMINI.md 系统法则已成功持久化落盘');
+      } catch (e) { console.error(e); }
+    }
+
+    async function sendAgentPrompt() {
+      const input = document.getElementById('agent-prompt-input');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      const out = document.getElementById('agent-prompt-output');
+      const btn = document.getElementById('btn-agent-prompt');
+      btn.disabled = true;
+      btn.textContent = 'AGY 思考执行中...';
+      out.textContent = `[>] 发送指令: ${prompt}\n[*] 正在由本地 AGY 引擎与大模型矩阵执行推理...`;
+
+      try {
+        const res = await fetch('/api/agent/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const d = await res.json();
+        out.textContent = d.success ? (d.response || '执行完毕，无文本返回') : `执行异常: ${d.error}`;
+      } catch (e) {
+        out.textContent = `网络错误: ${e}`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '执行指令';
+      }
+    }
+
+    /* --- SKILLS & SERVICES & WIKI HANDLERS --- */
+    async function fetchSkills() {
+      try {
+        const res = await fetch('/api/skills');
+        const skills = await res.json();
+
+        const grid = document.getElementById('skills-grid');
+        grid.innerHTML = skills.map(s => `
+          <div class="glass-panel p-4 rounded-2xl border border-gray-800 space-y-3 flex flex-col justify-between hover:border-cyan-500/40 transition">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-bold text-gray-100 font-sans text-xs">${s.title}</div>
+                  <div class="font-mono text-[11px] text-cyan-400 font-semibold">${s.name}</div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-bold">实体就绪</span>
+              </div>
+              <p class="text-[11px] text-gray-300 leading-relaxed">${s.description}</p>
+              
+              <div class="p-2.5 rounded-lg bg-gray-900/90 border border-gray-800/80 space-y-1 font-mono text-[10px]">
+                <div class="text-gray-400 flex items-center justify-between">
+                  <span>执行体:</span>
+                  <span class="text-emerald-400 truncate max-w-[170px]" title="${s.executable_path}">${s.executable_path}</span>
+                </div>
+                <div class="text-gray-400 flex items-center justify-between">
+                  <span>冷备份:</span>
+                  <span class="text-purple-300 truncate max-w-[170px]" title="${s.reference_path}">/lengbeifen (${s.ref_lines}行)</span>
+                </div>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-gray-800/60 flex justify-between items-center">
+              <div class="flex flex-wrap gap-1">
+                ${s.triggers.map(t => `<span class="px-1.5 py-0.5 rounded bg-gray-800 text-[10px] text-gray-400 font-mono">${t}</span>`).join('')}
+              </div>
+              <button onclick="openSkillModal('${s.name}', '${s.title}')" class="px-3 py-1 bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white rounded text-xs font-medium transition">
+                查看全文档
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function openSkillModal(skillName, skillTitle) {
+      currentSkillEditing = skillName;
+      document.getElementById('modal-skill-title').textContent = `${skillTitle || skillName} (${skillName})`;
+      document.getElementById('skill-modal').classList.remove('hidden');
+      const box = document.getElementById('modal-skill-content');
+      box.value = '正在加载技能全量文档与冷存储实现...';
+
+      try {
+        const res = await fetch(`/api/skills/detail?name=${skillName}`);
+        const d = await res.json();
+        box.value = `=== [热路由] /root/.gemini/config/skills/${skillName}/SKILL.md ===
+${d.skill_md}
+
+=== [冷存储详细实现与排错] ${d.ref_path} ===
+${d.reference_doc}`;
+      } catch (e) { box.value = `Error loading skill: ${e}`; }
+    }
+
+    function closeSkillModal() { document.getElementById('skill-modal').classList.add('hidden'); }
+
+    async function saveSkillContent() {
+      const content = document.getElementById('modal-skill-content').value;
+      try {
+        const res = await fetch('/api/skills/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: currentSkillEditing, content })
+        });
+        const d = await res.json();
+        if (d.success) {
+          showToast(`已成功保存 ${currentSkillEditing}/SKILL.md`);
+          closeSkillModal();
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function fetchServices() {
+      try {
+        const [resDaemons, resCron] = await Promise.all([
+          fetch('/api/services/daemons'),
+          fetch('/api/services/crontab')
+        ]);
+        const daemons = await resDaemons.json();
+        const crons = await resCron.json();
+
+        // Daemons table
+        const tbodyD = document.getElementById('daemons-table');
+        tbodyD.innerHTML = daemons.map(d => `
+          <tr class="hover:bg-gray-800/40 transition">
+            <td class="py-3 px-4 font-sans font-bold text-gray-200">${d.name}</td>
+            <td class="py-3 px-4">
+              ${d.is_running 
+                ? '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">运行中 (Active)</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 border border-red-500/30">已停止</span>'}
+            </td>
+            <td class="py-3 px-4 text-gray-400">${d.pid || '--'}</td>
+            <td class="py-3 px-4 text-cyan-300">${d.cpu_pct.toFixed(1)}%</td>
+            <td class="py-3 px-4 text-purple-300">${d.mem_mb.toFixed(1)} MB</td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="restartDaemon('${d.name}')" class="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded text-[11px] font-sans">
+                重启
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+        // Crontab table
+        const tbodyC = document.getElementById('crontab-table');
+        tbodyC.innerHTML = crons.map(c => `
+          <tr class="hover:bg-gray-800/40 transition">
+            <td class="py-3 px-4 text-emerald-400 font-bold">${c.schedule}</td>
+            <td class="py-3 px-4 text-gray-300 max-w-md truncate" title="${c.command}">${c.command}</td>
+            <td class="py-3 px-4 text-gray-400 text-[11px]">${c.log_path || '--'}</td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="triggerCronManual('${c.raw.replace(/'/g, "\\'")}')" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white rounded text-[11px] font-sans font-medium">
+                立即执行
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function triggerCronManual(command) {
+      showToast('正在手动触发 Cron 任务后台执行...');
+      try {
+        const res = await fetch('/api/services/crontab/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command })
+        });
+        const d = await res.json();
+        if (d.success) showToast('任务已在后台唤醒执行');
+      } catch (e) { console.error(e); }
+    }
+
+    async function restartDaemon(serviceName) {
+      showToast(`正在发送重启指令: ${serviceName}...`);
+      try {
+        const res = await fetch('/api/services/restart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ service_name: serviceName.includes('TG') ? 'telegram_bot_rust' : 'poly_mission_control' })
+        });
+        await res.json();
+        showToast('服务已重新拉起');
+        fetchServices();
+      } catch (e) { console.error(e); }
+    }
+
+    async function fetchWiki() {
+      try {
+        const res = await fetch('/api/wiki/list');
+        const files = await res.json();
+        const box = document.getElementById('wiki-file-list');
+
+        box.innerHTML = files.map(f => `
+          <div onclick="openWikiFile('${f.relative_path}')" class="p-2 rounded-lg hover:bg-gray-800 cursor-pointer transition flex items-center justify-between text-gray-300 hover:text-white">
+            <span class="truncate text-xs font-mono">${f.relative_path}</span>
+            <span class="text-[10px] text-gray-500 font-mono">${Math.round(f.size_bytes / 1024)}KB</span>
+          </div>
+        `).join('');
+
+        if (files.length > 0 && !currentWikiEditing) {
+          openWikiFile(files[0].relative_path);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function openWikiFile(path) {
+      currentWikiEditing = path;
+      document.getElementById('wiki-current-file-label').textContent = path;
+      const editor = document.getElementById('wiki-editor');
+      editor.value = '正在加载笔记...';
+
+      try {
+        const res = await fetch(`/api/wiki/file?path=${encodeURIComponent(path)}`);
+        const d = await res.json();
+        editor.value = d.content || '';
+      } catch (e) { editor.value = `Error loading: ${e}`; }
+    }
+
+    async function saveWikiFile() {
+      if (!currentWikiEditing) return;
+      const content = document.getElementById('wiki-editor').value;
+      try {
+        const res = await fetch('/api/wiki/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: currentWikiEditing, content })
+        });
+        const d = await res.json();
+        if (d.success) showToast(`已成功保存 ${currentWikiEditing}`);
+      } catch (e) { console.error(e); }
+    }
+
+    /* --- ACCOUNTS MATRIX HANDLERS --- */
+    async function fetchAccounts() {
+      try {
+        const res = await fetch('/api/accounts');
+        const accounts = await res.json();
+
+        const polyAcc = accounts.find(a => a.platform === 'Polymarket' || a.platform === 'Dual');
+        if (polyAcc) {
+          document.getElementById('kpi-poly-usdc').textContent = `${polyAcc.usdc_balance.toFixed(2)} USDC`;
+          const el1 = document.getElementById('poly-deck-usdc'); if (el1) el1.textContent = `${polyAcc.usdc_balance.toFixed(2)} USDC`;
+          const el2 = document.getElementById('poly-deck-pol'); if (el2) el2.textContent = `${polyAcc.pol_balance.toFixed(2)} POL`;
+        }
+
+        const predAcc = accounts.find(a => a.platform === 'Predict.fun' || a.platform === 'Dual');
+        if (predAcc) {
+          document.getElementById('kpi-pred-usdt').textContent = `${predAcc.usdt_balance.toFixed(2)} USDT`;
+          const el3 = document.getElementById('pred-deck-usdt'); if (el3) el3.textContent = `${predAcc.usdt_balance.toFixed(2)} USDT`;
+          const el4 = document.getElementById('pred-deck-bnb'); if (el4) el4.textContent = `${predAcc.bnb_balance.toFixed(5)} BNB`;
+        }
+
+        const tbody = document.getElementById('accounts-table');
+        if (!tbody) return;
+
+        tbody.innerHTML = accounts.map(a => {
+          let platformBadge = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+          if (a.platform === 'Predict.fun') platformBadge = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+          if (a.platform === 'Dual') platformBadge = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+
+          const activeBadge = a.is_active 
+            ? '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">活跃</span>'
+            : '<span class="px-2 py-0.5 rounded text-[10px] bg-gray-700 text-gray-400">已禁用</span>';
+
+          const mainBal = a.platform === 'Predict.fun' ? `${a.usdt_balance.toFixed(2)} USDT` : `${a.usdc_balance.toFixed(2)} USDC`;
+          const gasBal = a.platform === 'Predict.fun' ? `${a.bnb_balance.toFixed(5)} BNB` : `${a.pol_balance.toFixed(2)} POL`;
+
+          return `
+            <tr class="hover:bg-gray-800/40 transition">
+              <td class="py-3 px-4 font-sans font-bold text-gray-200">${a.label}</td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] border font-sans ${platformBadge}">${a.platform}</span></td>
+              <td class="py-3 px-4 text-emerald-400">${a.eoa_address.substring(0,8)}...${a.eoa_address.substring(a.eoa_address.length-6)}</td>
+              <td class="py-3 px-4 text-gray-400">${a.proxy_address ? a.proxy_address.substring(0,8)+'...'+a.proxy_address.substring(a.proxy_address.length-6) : '--'}</td>
+              <td class="py-3 px-4 font-bold text-white">${mainBal}</td>
+              <td class="py-3 px-4 text-cyan-300">${gasBal}</td>
+              <td class="py-3 px-4">${activeBadge}</td>
+              <td class="py-3 px-4 text-right space-x-1">
+                <button onclick="toggleAccount('${a.id}')" class="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-[11px] font-sans">
+                  ${a.is_active ? '禁用' : '启用'}
+                </button>
+                <button onclick="removeAccount('${a.id}')" class="px-2 py-1 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white rounded text-[11px] font-sans">
+                  删除
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function syncAllBalances() {
+      showToast('正在向 Polygon & BSC RPC 同步真实余额...');
+      try {
+        const res = await fetch('/api/accounts/sync', { method: 'POST' });
+        await res.json();
+        showToast('全链真实余额同步完毕');
+        fetchAccounts();
+      } catch (e) { console.error(e); }
+    }
+
+    async function toggleAccount(id) {
+      try {
+        await fetch('/api/accounts/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        showToast('账号状态已切换');
+        fetchAccounts();
+      } catch (e) { console.error(e); }
+    }
+
+    async function removeAccount(id) {
+      try {
+        await fetch('/api/accounts/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        showToast('账号已移除');
+        fetchAccounts();
+      } catch (e) { console.error(e); }
+    }
+
+    function openAddAccountModal() { document.getElementById('account-modal').classList.remove('hidden'); }
+    function closeAccountModal() { document.getElementById('account-modal').classList.add('hidden'); }
+
+    async function submitNewAccount() {
+      const label = document.getElementById('modal-acc-label').value.trim();
+      const platform = document.getElementById('modal-acc-platform').value;
+      const eoa = document.getElementById('modal-acc-eoa').value.trim();
+      const proxy = document.getElementById('modal-acc-proxy').value.trim();
+
+      if (!label || !eoa) {
+        alert('请完整填写账号标签和 EOA 钱包地址');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/accounts/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label, platform, eoa_address: eoa, proxy_address: proxy || null })
+        });
+        const d = await res.json();
+        if (d.success) {
+          showToast(`已成功录入新账号: ${label}`);
+          closeAccountModal();
+          fetchAccounts();
+        } else {
+          alert(`录入失败: ${d.error}`);
+        }
+      } catch (e) { alert(`请求异常: ${e}`); }
+    }
+
+    async function fetchPolymarket() { fetchAccounts(); }
+    async function triggerPolyTestOrder() {
+      const out = document.getElementById('poly-clob-output');
+      out.textContent = '正在发起 Polymarket CLOB SDK 探针...';
+      try {
+        const res = await fetch('/api/polymarket/test-order', { method: 'POST' });
+        const d = await res.json();
+        out.textContent = JSON.stringify(d, null, 2);
+        showToast('Polymarket SDK 探针响应成功');
+      } catch (e) { out.textContent = `Error: ${e}`; }
+    }
+
+    async function triggerCancelAll() {
+      const out = document.getElementById('poly-clob-output');
+      out.textContent = '正在发送全撤单信号...';
+      try {
+        const res = await fetch('/api/polymarket/cancel-all', { method: 'POST' });
+        const d = await res.json();
+        out.textContent = JSON.stringify(d, null, 2);
+        showToast('全撤单指令已广播');
+      } catch (e) { out.textContent = `Error: ${e}`; }
+    }
+
+    async function fetchPredictFun() { fetchAccounts(); }
+    async function triggerPredictFunProbe() {
+      const out = document.getElementById('predict-fun-output');
+      out.textContent = '正在测试 Predict.fun 多链通道...';
+      try {
+        const res = await fetch('/api/predict-fun/probe', { method: 'POST' });
+        const d = await res.json();
+        out.textContent = JSON.stringify(d, null, 2);
+        showToast('Predict.fun SDK 通道正常');
+      } catch (e) { out.textContent = `Error: ${e}`; }
+    }
+
+    async function fetchBlacklist() {
+      try {
+        const res = await fetch('/api/blacklist');
+        const list = await res.json();
+        const tbody = document.getElementById('blacklist-table');
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">黑名单为空</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = list.map(item => `
+          <tr class="hover:bg-gray-800/40 transition">
+            <td class="py-3 px-4 text-red-400 font-mono">${item.address.substring(0, 10)}...${item.address.substring(item.address.length - 8)}</td>
+            <td class="py-3 px-4 text-gray-300 font-sans max-w-md truncate">${item.reason || '散户噪音单'}</td>
+            <td class="py-3 px-4 text-gray-400 font-sans max-w-xs truncate">${item.sample_market || '--'}</td>
+            <td class="py-3 px-4 text-gray-500 font-mono text-[11px]">${item.blocked_at ? item.blocked_at.replace('T', ' ').substring(0, 19) : '--'}</td>
+          </tr>
+        `).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function fetchRealTrades() {
+      try {
+        const res = await fetch('/api/real-trades');
+        const data = await res.json();
+        document.getElementById('kpi-real-pnl').textContent = `$${data.total_pnl_usd.toFixed(2)}`;
+
+        const tbody = document.getElementById('real-trades-table');
+        tbody.innerHTML = data.recent_trades.map(t => {
+          const isWin = t.status === 'WIN' || (t.pnl_usdc && t.pnl_usdc > 0);
+          const pnlColor = isWin ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold';
+          const statusBadge = isWin ? '<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">WIN</span>' : '<span class="px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 text-[10px]">LOSS</span>';
+
+          return `
+            <tr class="hover:bg-gray-800/40 transition">
+              <td class="py-2.5 px-4 text-gray-400">${t.cst_time || '--'}</td>
+              <td class="py-2.5 px-4 text-gray-200 font-sans max-w-xs truncate">${t.title || 'Polymarket Position'}</td>
+              <td class="py-2.5 px-4 text-gray-300">${t.outcome || t.side || '--'}</td>
+              <td class="py-2.5 px-4 text-gray-300">$${(t.price || 0).toFixed(2)}</td>
+              <td class="py-2.5 px-4 text-gray-300">$${(t.cost_usdc || 0).toFixed(1)}</td>
+              <td class="py-2.5 px-4">${statusBadge}</td>
+              <td class="py-2.5 px-4 text-right ${pnlColor}">${(t.pnl_usdc || 0) >= 0 ? '+' : ''}$${(t.pnl_usdc || 0).toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function fetchLogs(type) {
+      currentLogTab = type;
+      ['batch', 'tg', 'audit'].forEach(t => {
+        const btn = document.getElementById(`log-btn-${t}`);
+        if (btn) {
+          if (t === type) btn.className = 'px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-medium';
+          else btn.className = 'px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700';
+        }
+      });
+
+      try {
+        const res = await fetch(`/api/logs?name=${type}&limit=60`);
+        const data = await res.json();
+        const box = document.getElementById('log-content');
+        box.textContent = data.lines.join('\n') || '日志为空或正在等待下次调度写入...';
+        box.scrollTop = box.scrollHeight;
+      } catch (e) { console.error(e); }
+    }
+
+    function openIntelModal(idx) {
+      const p = globalEarlyProfiles[idx];
+      if (!p) return;
+      document.getElementById('modal-wallet').textContent = p.wallet;
+      document.getElementById('modal-add-btn').onclick = () => {
+        addEarlyBirdToSmartWallets(p.wallet, p.tags[0] || '早鸟内幕');
+        closeModal();
+      };
+      
+      const intel = p.l3_intel;
+      if (intel) {
+        document.getElementById('modal-summary').textContent = intel.summary || '暂无画像';
+        document.getElementById('modal-copy').textContent = intel.copy_recommendation || '建议按标准风控小额跟单';
+        document.getElementById('modal-domain').textContent = `${intel.domain} • 确信度: ${intel.conviction_level}`;
+        const risks = intel.risk_points && intel.risk_points.length > 0 ? intel.risk_points : ['早期样本较少需注意滑点'];
+        document.getElementById('modal-risks').innerHTML = risks.map(r => `<li>${r}</li>`).join('');
+      } else {
+        document.getElementById('modal-summary').textContent = `多盘口(${p.distinct_markets_count}场)早期建仓均价$${p.avg_entry_price.toFixed(2)}，胜率${(p.win_rate*100).toFixed(1)}%`;
+        document.getElementById('modal-copy').textContent = '建议限额跟单，建仓赔率<=0.40时跟随';
+        document.getElementById('modal-domain').textContent = `${p.tags[0] || '综合先知'} • 确信度: 高`;
+        document.getElementById('modal-risks').innerHTML = '<li>长尾小众盘口流动性较浅，注意滑点</li>';
+      }
+      document.getElementById('intel-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('intel-modal').classList.add('hidden'); }
+
+    // Initial load and auto refresh
+    fetchAllData();
+    setInterval(fetchAllData, 12000);
+  </script>
+</body>
+</html>

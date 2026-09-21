@@ -1,0 +1,20 @@
+[package]
+name = "poly_mission_control"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.38", features = ["full"] }
+axum = { version = "0.7", features = ["multipart"] }
+tower-http = { version = "0.5", features = ["cors", "fs"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+chrono = "0.4"
+reqwest = { version = "0.12", features = ["json"] }
+rust-embed = "8.5"
+mime_guess = "2.0"
+tokio-util = { version = "0.7", features = ["io"] }
+sha2 = "0.10"
+base64 = "0.22"
+tower = { version = "0.4", features = ["util"] }

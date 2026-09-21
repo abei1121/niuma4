@@ -1,0 +1,26 @@
+#!/bin/bash
+# Antigravity Telegram File/Multimedia Push Tool
+if [ -z "$1" ]; then
+    echo "Usage: tg_send_file <file_path> [caption]"
+    exit 1
+fi
+
+FILE_PATH="$1"
+CAPTION="$2"
+
+if [ ! -f "$FILE_PATH" ]; then
+    echo "Error: File '$FILE_PATH' does not exist!"
+    exit 1
+fi
+
+RESP=$(curl -s -X POST "http://127.0.0.1:8090/send_tg_file" \
+    --data-urlencode "path=$FILE_PATH" \
+    --data-urlencode "caption=$CAPTION")
+
+if [ "$RESP" = "FILE_SENT_SUCCESS" ]; then
+    echo "File '$FILE_PATH' successfully sent to Telegram."
+    exit 0
+else
+    echo "Failed to send file: $RESP"
+    exit 1
+fi

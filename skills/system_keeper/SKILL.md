@@ -26,5 +26,5 @@ triggers:
    `/Users/hi/niuma/scripts/manage_services.sh restart system_keeper_rust`
 
 ## 保护与守护清单
-- 重点保活: `poly_mission_control`, `telegram_bot`, `hysteria-client`, `hermes_heartbeat`
-- 详细参考文档: `/Users/hi/niuma/lengbeifen/system_keeper_reference.md`
+- 重点保活: `poly_mission_control`, `telegram_bot_rust`, `proxy_health_checker_rust`, `lan_file_server`, `hysteria`
+- 详细参考文档: `/Users/hi/niuma/wiki/MacM2内存与进程看门狗.md`

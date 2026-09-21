@@ -96,6 +96,21 @@ pub async fn fix_orientation(Json(req): Json<FixOrientationReq>) -> impl IntoRes
         _ => "null",
     };
 
+    #[cfg(target_os = "macos")]
+    let status = Command::new("ffmpeg")
+        .args([
+            "-y",
+            "-i", &req.path,
+            "-vf", vf_filter,
+            "-metadata:s:v", "rotate=0",
+            "-c:v", "h264_videotoolbox",
+            "-b:v", "5000k",
+            "-c:a", "copy",
+            output_path.to_str().unwrap_or(""),
+        ])
+        .status();
+
+    #[cfg(not(target_os = "macos"))]
     let status = Command::new("ffmpeg")
         .args([
             "-y",

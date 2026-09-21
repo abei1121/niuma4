@@ -3,6 +3,7 @@
 # 支持: start, stop, restart, status
 
 ACTION="${1:-status}"
+TARGET="${2:-}"
 BASE_DIR="/Users/hi/niuma"
 BIN_DIR="$BASE_DIR/bin"
 LOG_DIR="$BASE_DIR"
@@ -63,26 +64,72 @@ stop_service() {
 
 case "$ACTION" in
     start)
-        echo "=== 正在启动牛马4号全量核心守护服务 ==="
-        for item in "${SERVICES[@]}"; do
-            IFS=':' read -r name desc cmd log <<< "$item"
-            start_service "$name" "$desc" "$cmd" "$log"
-        done
+        if [ -n "$TARGET" ]; then
+            found=false
+            for item in "${SERVICES[@]}"; do
+                IFS=':' read -r name desc cmd log <<< "$item"
+                if [[ "$name" == *"$TARGET"* ]]; then
+                    start_service "$name" "$desc" "$cmd" "$log"
+                    found=true
+                fi
+            done
+            if [ "$found" = false ]; then
+                echo "未找到匹配服务: $TARGET"
+                exit 1
+            fi
+        else
+            echo "=== 正在启动牛马4号全量核心守护服务 ==="
+            for item in "${SERVICES[@]}"; do
+                IFS=':' read -r name desc cmd log <<< "$item"
+                start_service "$name" "$desc" "$cmd" "$log"
+            done
+        fi
         ;;
     stop)
-        echo "=== 正在停止牛马4号全量守护服务 ==="
-        for item in "${SERVICES[@]}"; do
-            IFS=':' read -r name desc cmd log <<< "$item"
-            stop_service "$name"
-        done
+        if [ -n "$TARGET" ]; then
+            found=false
+            for item in "${SERVICES[@]}"; do
+                IFS=':' read -r name desc cmd log <<< "$item"
+                if [[ "$name" == *"$TARGET"* ]]; then
+                    stop_service "$name"
+                    found=true
+                fi
+            done
+            if [ "$found" = false ]; then
+                echo "未找到匹配服务: $TARGET"
+                exit 1
+            fi
+        else
+            echo "=== 正在停止牛马4号全量守护服务 ==="
+            for item in "${SERVICES[@]}"; do
+                IFS=':' read -r name desc cmd log <<< "$item"
+                stop_service "$name"
+            done
+        fi
         ;;
     restart)
-        echo "=== 正在重启牛马4号全量守护服务 ==="
-        for item in "${SERVICES[@]}"; do
-            IFS=':' read -r name desc cmd log <<< "$item"
-            stop_service "$name"
-            start_service "$name" "$desc" "$cmd" "$log"
-        done
+        if [ -n "$TARGET" ]; then
+            found=false
+            for item in "${SERVICES[@]}"; do
+                IFS=':' read -r name desc cmd log <<< "$item"
+                if [[ "$name" == *"$TARGET"* ]]; then
+                    stop_service "$name"
+                    start_service "$name" "$desc" "$cmd" "$log"
+                    found=true
+                fi
+            done
+            if [ "$found" = false ]; then
+                echo "未找到匹配服务: $TARGET"
+                exit 1
+            fi
+        else
+            echo "=== 正在重启牛马4号全量守护服务 ==="
+            for item in "${SERVICES[@]}"; do
+                IFS=':' read -r name desc cmd log <<< "$item"
+                stop_service "$name"
+                start_service "$name" "$desc" "$cmd" "$log"
+            done
+        fi
         ;;
     status)
         echo "=== 牛马4号 核心守护服务实时运行状态 ==="

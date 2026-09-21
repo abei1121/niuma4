@@ -119,7 +119,17 @@ pub async fn create_video_task(Json(payload): Json<CreateTaskReq>) -> impl IntoR
                 cmd.arg("-vn").arg("-acodec").arg("libmp3lame").arg("-q:a").arg("2");
             }
             "convert_vertical" => {
-                cmd.arg("-vf").arg("crop=ih*9/16:ih").arg("-c:a").arg("copy");
+                #[cfg(target_os = "macos")]
+                {
+                    cmd.arg("-vf").arg("crop=ih*9/16:ih")
+                        .arg("-c:v").arg("h264_videotoolbox")
+                        .arg("-b:v").arg("5000k")
+                        .arg("-c:a").arg("copy");
+                }
+                #[cfg(not(target_os = "macos"))]
+                {
+                    cmd.arg("-vf").arg("crop=ih*9/16:ih").arg("-c:a").arg("copy");
+                }
             }
             "compress_vaapi" | "compress_videotoolbox" | "compress_hardware" => {
                 #[cfg(target_os = "macos")]

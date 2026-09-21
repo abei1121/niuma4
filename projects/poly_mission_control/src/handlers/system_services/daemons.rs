@@ -24,7 +24,7 @@ pub async fn get_daemons_status() -> Json<Vec<ProcessStatus>> {
         ("poly_mission_control.service", "poly_mission_control", "自媒体控制中枢 Web 管理引擎 (8999端口)"),
         ("telegram_bot.service", "telegram_bot_rust", "Telegram 手机端双向通信桥接服务"),
         ("system_keeper.service", "system_keeper_rust", "系统机械级常驻守护引擎 (孤儿收割与防卡死)"),
-        ("proxy-health-checker.service", "proxy_health_checker", "代理健康监测与网络自愈服务 (自动探活)"),
+        ("proxy-health-checker.service", "proxy_health_checker_rust", "代理健康监测与网络自愈服务 (自动探活)"),
         ("lan_file_server.service", "lan_file_server", "局域网跨设备高速文件传输服务 (8888端口)"),
         ("hysteria-client.service", "hysteria", "Hysteria 2 高速专线代理隧道 (可选专网)"),
     ];
@@ -125,33 +125,50 @@ pub async fn restart_service(Json(payload): Json<RestartServiceRequest>) -> Json
 
     #[cfg(target_os = "macos")]
     {
-        let bin_name = match raw_name {
+        let service_id = match raw_name {
             "system_keeper" | "system_keeper_rust" | "system_keeper.service" => "system_keeper_rust",
             "telegram_bot" | "telegram_bot_rust" | "telegram_bot.service" => "telegram_bot_rust",
             "proxy_health_checker" | "proxy_health_checker_rust" | "proxy-health-checker.service" => "proxy_health_checker_rust",
             "lan_file_server" | "lan_file_server.service" => "lan_file_server",
             "poly_mission_control" | "mission_control" | "poly_mission_control.service" => "poly_mission_control",
+            "hysteria" | "hysteria-client.service" | "hysteria.service" => "hysteria",
             other => other.trim_end_matches(".service"),
         };
 
-        let bin_path = format!("/Users/hi/niuma/bin/{}", bin_name);
-        let log_path = format!("/Users/hi/niuma/{}.log", bin_name);
-
-        if !std::path::Path::new(&bin_path).exists() {
-            return Json(json!({"success": false, "error": format!("执行体 {} 不存在", bin_path)}));
+        let manage_script = "/Users/hi/niuma/scripts/manage_services.sh";
+        if !std::path::Path::new(manage_script).exists() {
+            return Json(json!({"success": false, "error": format!("管理脚本 {} 不存在", manage_script)}));
         }
 
-        // Kill existing process if running (except self if requested, handled via nohup)
-        let _ = Command::new("pkill").arg("-f").arg(bin_name).output();
-        std::thread::sleep(std::time::Duration::from_millis(300));
+        if service_id == "poly_mission_control" {
+            let res = Command::new("bash")
+                .arg("-c")
+                .arg(format!("sleep 0.5 && {} restart {} >> /Users/hi/niuma/poly_mission_control.log 2>&1 &", manage_script, service_id))
+                .spawn();
 
-        let res = Command::new("bash")
-            .arg("-c")
-            .arg(format!("nohup {} >> {} 2>&1 &", bin_path, log_path))
-            .spawn();
+            return match res {
+                Ok(_) => Json(json!({"success": true, "service": service_id, "message": "控制台中枢正在后台异步重启..."})),
+                Err(e) => Json(json!({"success": false, "error": e.to_string()})),
+            };
+        }
 
-        return match res {
-            Ok(_) => Json(json!({"success": true, "service": bin_name, "message": format!("服务 {} 已重启拉起", bin_name)})),
+        let out = Command::new("bash")
+            .arg(manage_script)
+            .arg("restart")
+            .arg(service_id)
+            .output();
+
+        return match out {
+            Ok(o) => {
+                let stdout = String::from_utf8_lossy(&o.stdout).to_string();
+                let stderr = String::from_utf8_lossy(&o.stderr).to_string();
+                let msg = format!("{}{}", stdout, stderr);
+                Json(json!({
+                    "success": o.status.success(),
+                    "service": service_id,
+                    "message": msg.trim()
+                }))
+            }
             Err(e) => Json(json!({"success": false, "error": e.to_string()})),
         };
     }

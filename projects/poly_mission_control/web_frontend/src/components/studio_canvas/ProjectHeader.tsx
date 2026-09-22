@@ -1,6 +1,6 @@
 import { FunctionalComponent } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
-import { listProjects, saveProject, loadProject, ProjectSummary } from '../../api/video';
+import { listProjects, saveProject, loadProject, deleteProject, ProjectSummary } from '../../api/video';
 
 interface Props {
   projectName: string;
@@ -24,9 +24,10 @@ export const ProjectHeader: FunctionalComponent<Props> = ({
   const refreshList = async () => {
     try {
       const list = await listProjects();
-      setProjectList(list);
+      setProjectList(Array.isArray(list) ? list : []);
     } catch (e) {
       console.error(e);
+      setProjectList([]);
     }
   };
 
@@ -58,11 +59,29 @@ export const ProjectHeader: FunctionalComponent<Props> = ({
       if (res.success && res.project) {
         onLoadProjectData(res.project.name, res.project.data);
         setShowLoadDropdown(false);
+        setSaveStatus(`已载入: ${res.project.name}`);
+        setTimeout(() => setSaveStatus(''), 2500);
       } else {
-        alert('读取工程失败: ' + res.error);
+        alert('读取工程失败: ' + (res.error || '未知错误'));
       }
     } catch (e) {
       alert('加载异常: ' + e);
+    }
+  };
+
+  const handleDeleteProject = async (name: string) => {
+    if (!confirm(`确定删除工程 "${name}" 吗？此操作不可恢复。`)) return;
+    try {
+      const res = await deleteProject(name);
+      if (res.success) {
+        refreshList();
+        setSaveStatus(`已删除工程: ${name}`);
+        setTimeout(() => setSaveStatus(''), 2000);
+      } else {
+        alert(`删除失败: ${res.error || '未知原因'}`);
+      }
+    } catch (e) {
+      alert('删除异常: ' + e);
     }
   };
 
@@ -86,7 +105,6 @@ export const ProjectHeader: FunctionalComponent<Props> = ({
       </div>
 
       <div className="flex items-center space-x-2">
-        {/* 新建项目按钮 */}
         <button
           onClick={onNewProject}
           className="px-3 py-1.5 bg-cyan-600/30 hover:bg-cyan-600/40 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs font-bold transition flex items-center space-x-1"
@@ -94,7 +112,6 @@ export const ProjectHeader: FunctionalComponent<Props> = ({
           <span>创建新项目</span>
         </button>
 
-        {/* 保存工程 */}
         <button
           onClick={handleSave}
           className="px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-bold transition flex items-center space-x-1"
@@ -102,7 +119,6 @@ export const ProjectHeader: FunctionalComponent<Props> = ({
           <span>保存工程</span>
         </button>
 
-        {/* 载入已有项目 */}
         <div className="relative">
           <button
             onClick={() => {
@@ -111,22 +127,33 @@ export const ProjectHeader: FunctionalComponent<Props> = ({
             }}
             className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 rounded-lg text-xs font-bold transition flex items-center space-x-1"
           >
-            <span>已有工程 ({projectList.length}) ▾</span>
+            <span>已有工程 ({(Array.isArray(projectList) ? projectList : []).length}) ▾</span>
           </button>
 
           {showLoadDropdown && (
-            <div className="absolute right-0 mt-2 w-64 bg-gray-950 border border-gray-700 rounded-xl shadow-2xl z-50 p-2 text-xs space-y-1 max-h-56 overflow-y-auto">
-              {projectList.length === 0 ? (
+            <div className="absolute right-0 mt-2 w-72 bg-gray-950 border border-gray-700 rounded-xl shadow-2xl z-50 p-2 text-xs space-y-1 max-h-56 overflow-y-auto">
+              {(!Array.isArray(projectList) || projectList.length === 0) ? (
                 <div className="text-gray-500 p-2 text-center text-[11px]">暂无已保存的历史工程</div>
               ) : (
-                projectList.map((p) => (
+                (Array.isArray(projectList) ? projectList : []).map((p) => (
                   <div
                     key={p.name}
                     onClick={() => handleSelectProject(p.name)}
-                    className="p-2 hover:bg-gray-800 rounded cursor-pointer transition text-gray-300 flex justify-between items-center"
+                    className="p-2 hover:bg-gray-800 rounded cursor-pointer transition text-gray-300 flex justify-between items-center group"
                   >
-                    <span className="font-mono truncate flex-1 font-bold">{p.name}</span>
-                    <span className="text-[10px] text-gray-500 ml-2 font-mono">{p.file}</span>
+                    <span className="font-mono truncate flex-1 font-bold text-gray-200 group-hover:text-cyan-300">{p.name}</span>
+                    <span className="text-[10px] text-gray-500 ml-2 font-mono shrink-0">{p.file}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProject(p.name);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-rose-400 px-1.5 font-bold ml-2 transition text-sm shrink-0"
+                      title="删除此历史工程"
+                    >
+                      ×
+                    </button>
                   </div>
                 ))
               )}

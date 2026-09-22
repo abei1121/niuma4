@@ -42,5 +42,9 @@
   {
     "role": "system",
     "content": "# 核心设定与行为准则 - 11. macOS LaunchAgent 开机自启与服务自愈铁律\n- **自启配置文件定点**：`~/Library/LaunchAgents/com.niuma.services.plist`\n- **自启入口**：`/Users/hi/niuma/scripts/boot_autostart.sh`\n- **机制**：通过 `AbandonProcessGroup: true` 实现开机自动拉起 6 大常驻服务（Mission Control 8999、Telegram Bot 8090、System Keeper、Proxy Checker、LAN File Server 8888、Hysteria 2），启动日志落盘于 `launchd_boot.log`。"
+  },
+  {
+    "role": "system",
+    "content": "# 核心设定与行为准则 - 12. 自媒体剪辑中枢全自动双轨与工程持久化铁律\n- **工程持久化与恢复**：项目保存与读取参数签名解耦，载入已有工程时完整恢复 L0 原片、L1 粗剪切片/停顿、L2 赛道导演与提示词、L3 多轨分镜与草稿、L4 压制配置，并自动调用 `rfInstance.fitView` 居中对焦。\n- **全流程双轨流水线**：L0 素材池接入与正向旋转，L1 停顿粗剪，L2 12大赛道×6大角色AI导演与8大平台避坑，L3 剪映精修（智能叙事、动态花字、情绪BGM、B-Roll插屏）直通本地草稿，L4 M2 VideoToolbox 硬件压制直达成品。\n- **小文件解耦契约**：前端组件与 Hook 单一职责拆分（`studioNodeBuilders.ts`、`studioCanvasActions.ts`、`L1SegmentsInspector.tsx`、`L2SectorSelector.tsx`、`L2PlatformCard.tsx` 等），所有文件严格小于 250 行。\n- **禁止表情符号**：所有界面输出、代码、弹窗与沟通严禁出现任何 Emoji。"
   }
 ]

@@ -49,12 +49,18 @@ export const NodeL4Render: FunctionalComponent<Props> = ({ data }) => {
             </div>
           </div>
         ) : (
-          <button
-            onClick={() => data.onStartRender?.()}
-            className="w-full py-2 px-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-lg font-bold text-center transition shadow-lg shadow-rose-950 flex items-center justify-center space-x-1.5"
-          >
-            <span>触发 VideoToolbox 硬件压制导出</span>
-          </button>
+          <div className="space-y-2 nodrag">
+            <button
+              type="button"
+              onClick={() => data.onStartRender?.()}
+              className="nodrag cursor-pointer select-none w-full py-2.5 px-3 bg-gradient-to-r from-emerald-600 via-rose-600 to-pink-600 hover:from-emerald-500 hover:via-rose-500 hover:to-pink-500 text-white rounded-lg font-bold text-center transition shadow-lg shadow-rose-950 flex items-center justify-center space-x-1.5 active:scale-95"
+            >
+              <span>100% 全自动双轨出片</span>
+            </button>
+            <div className="text-[10px] text-gray-400 text-center leading-tight">
+              Whisper词级字幕 + 9:16毛玻璃 + BGM下潜 + 剪映草稿
+            </div>
+          </div>
         )}
 
         {data.outputFile && (

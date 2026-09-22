@@ -38,6 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/video/projects", get(handlers::video_projects::list_projects))
         .route("/api/video/projects/save", post(handlers::video_projects::save_project))
         .route("/api/video/projects/load", get(handlers::video_projects::load_project))
+        .route("/api/video/projects/delete", post(handlers::video_projects::delete_project).delete(handlers::video_projects::delete_project))
         .route("/api/video/fix-orientation", post(handlers::video_orientation::fix_orientation))
         .route("/api/video/detect-rotation", get(handlers::video_orientation::detect_rotation))
         .route("/api/video/download-url", post(handlers::video_orientation::download_remote_video))

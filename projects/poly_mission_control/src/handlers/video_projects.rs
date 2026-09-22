@@ -85,3 +85,23 @@ pub async fn load_project(Query(query): Query<LoadProjectQuery>) -> impl IntoRes
         Err(e) => Json(json!({ "success": false, "error": format!("找不到项目文件: {}", e) })),
     }
 }
+
+#[derive(Deserialize)]
+pub struct DeleteProjectQuery {
+    pub name: String,
+}
+
+pub async fn delete_project(Query(query): Query<DeleteProjectQuery>) -> impl IntoResponse {
+    let safe_name = query.name.replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], "_");
+    let file_path = Path::new(PROJECTS_DIR).join(format!("{}.json", safe_name));
+
+    if file_path.exists() {
+        match fs::remove_file(&file_path) {
+            Ok(_) => Json(json!({ "success": true, "name": query.name })),
+            Err(e) => Json(json!({ "success": false, "error": e.to_string() })),
+        }
+    } else {
+        Json(json!({ "success": false, "error": "工程文件不存在" }))
+    }
+}
+

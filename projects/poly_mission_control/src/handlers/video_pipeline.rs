@@ -111,6 +111,35 @@ pub async fn create_video_task(Json(payload): Json<CreateTaskReq>) -> impl IntoR
     let input = payload.input_file;
     let task_type = payload.task_type;
     tokio::spawn(async move {
+        if task_type == "auto_100pct" || task_type == "auto_pipeline" {
+            let res = Command::new("/Users/hi/niuma/video_workspace/venv/bin/python3")
+                .arg("/Users/hi/niuma/video_workspace/scripts/auto_editor_engine.py")
+                .arg("--input").arg(&input)
+                .arg("--output").arg(&output_path)
+                .arg("--mode").arg("all")
+                .output();
+
+            let mut cur_tasks = load_tasks();
+            if let Some(t) = cur_tasks.iter_mut().find(|t| t.id == task_id_clone) {
+                match res {
+                    Ok(output) if output.status.success() => {
+                        t.status = "completed".to_string();
+                        t.progress = 100;
+                    }
+                    Ok(output) => {
+                        t.status = "failed".to_string();
+                        t.error = Some(String::from_utf8_lossy(&output.stderr).to_string());
+                    }
+                    Err(e) => {
+                        t.status = "failed".to_string();
+                        t.error = Some(e.to_string());
+                    }
+                }
+            }
+            save_tasks(&cur_tasks);
+            return;
+        }
+
         let mut cmd = Command::new("ffmpeg");
         cmd.arg("-y").arg("-i").arg(&input);
 

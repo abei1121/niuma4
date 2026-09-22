@@ -57,15 +57,17 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
               </span>
               <div className="flex items-center space-x-1 shrink-0">
                 <button
+                  type="button"
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="px-1.5 py-0.5 bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded text-[10px] border border-gray-700 transition"
+                  className="nodrag cursor-pointer px-1.5 py-0.5 bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded text-[10px] border border-gray-700 transition"
                   title={isExpanded ? '收起紧凑视图' : '原地放大视窗'}
                 >
                   {isExpanded ? '收起' : '放大'}
                 </button>
                 <button
+                  type="button"
                   onClick={() => data.onOpenPreview?.(previewUrl, `[原片] ${fileNameShort}`)}
-                  className="px-1.5 py-0.5 bg-cyan-950/80 hover:bg-cyan-850 text-cyan-200 rounded text-[10px] border border-cyan-600/50 transition font-bold"
+                  className="nodrag cursor-pointer px-1.5 py-0.5 bg-cyan-950/80 hover:bg-cyan-850 text-cyan-200 rounded text-[10px] border border-cyan-600/50 transition font-bold"
                   title="打开大画幅高清监视台 (双击画面也可打开)"
                 >
                   大屏浏览
@@ -104,12 +106,13 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
       </div>
 
       {/* 画幅选择 */}
-      <div className="space-y-1 text-xs">
+      <div className="space-y-1 text-xs nodrag">
         <label className="text-gray-400 block text-[11px]">画幅方向</label>
         <div className="grid grid-cols-2 gap-2">
           <button
+            type="button"
             onClick={() => data.onUpdate?.({ ratio: '9:16' })}
-            className={`py-1 px-2 rounded font-semibold border text-center transition text-xs ${
+            className={`nodrag cursor-pointer select-none py-1 px-2 rounded font-semibold border text-center transition text-xs ${
               isVertical
                 ? 'bg-cyan-600/30 text-cyan-300 border-cyan-400'
                 : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'
@@ -118,8 +121,9 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
             9:16 (竖屏短视频)
           </button>
           <button
+            type="button"
             onClick={() => data.onUpdate?.({ ratio: '16:9' })}
-            className={`py-1 px-2 rounded font-semibold border text-center transition text-xs ${
+            className={`nodrag cursor-pointer select-none py-1 px-2 rounded font-semibold border text-center transition text-xs ${
               !isVertical
                 ? 'bg-cyan-600/30 text-cyan-300 border-cyan-400'
                 : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'
@@ -131,7 +135,7 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
       </div>
 
       {/* 素材列表 */}
-      <div className="space-y-1.5 text-xs">
+      <div className="space-y-1.5 text-xs nodrag">
         <div className="flex justify-between items-center text-gray-400">
           <span>待处理素材 ({fileCount})</span>
           <span className="text-gray-500 text-[10px]">点击切换播放</span>
@@ -149,7 +153,7 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
                 <div
                   key={i}
                   onClick={() => data.onSelectFile?.(f)}
-                  className={`flex items-center justify-between text-[11px] px-2 py-1 rounded border cursor-pointer transition gap-1.5 ${
+                  className={`flex items-center justify-between text-[11px] px-2 py-1 rounded border cursor-pointer transition gap-1.5 nodrag ${
                     isSelected ? 'bg-cyan-950/60 border-cyan-500/50 text-cyan-200 font-bold' : 'bg-gray-950/80 border-gray-800 text-gray-300 hover:bg-gray-800/80'
                   }`}
                 >
@@ -158,22 +162,25 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
                   </span>
                   <div className="flex items-center space-x-1 shrink-0">
                     <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); data.onRotateFile?.(i, 90); }}
-                      className="px-1 py-0.5 bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded text-[10px]"
+                      className="nodrag cursor-pointer px-1 py-0.5 bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded text-[10px]"
                       title="画面顺时针转90度"
                     >
                       旋90°
                     </button>
                     <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); data.onRotateFile?.(i, 180); }}
-                      className="px-1 py-0.5 bg-gray-800 hover:bg-gray-700 text-amber-300 rounded text-[10px]"
+                      className="nodrag cursor-pointer px-1 py-0.5 bg-gray-800 hover:bg-gray-700 text-amber-300 rounded text-[10px]"
                       title="画面翻转180度"
                     >
                       翻180°
                     </button>
                     <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); data.onRemoveFile?.(i); }}
-                      className="text-red-400 hover:text-red-300 px-1 rounded text-xs font-bold font-mono"
+                      className="nodrag cursor-pointer text-red-400 hover:text-red-300 px-1 rounded text-xs font-bold font-mono"
                       title="移除"
                     >
                       X
@@ -186,21 +193,29 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
         </div>
 
         <button
-          onClick={() => data.onOpenMediaPicker?.()}
-          className="w-full py-1.5 px-2 bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 rounded-lg text-xs font-semibold transition text-center"
+          type="button"
+          onClick={() => {
+            if (data.onAddFiles) data.onAddFiles();
+            else if (data.onOpenMediaPicker) data.onOpenMediaPicker();
+          }}
+          className="nodrag cursor-pointer select-none w-full py-2 px-2.5 bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-200 border border-cyan-500/40 rounded-lg text-xs font-bold transition text-center shadow-md flex items-center justify-center space-x-1.5 active:scale-[0.98]"
         >
-          添加素材 (多选/局域网/外网)
+          <span>＋ 添加素材 (多选/局域网/外网)</span>
         </button>
       </div>
 
       {/* 核心流转按钮 */}
-      <div className="pt-2 border-t border-gray-800">
+      <div className="pt-2 border-t border-gray-800 nodrag">
         <button
-          onClick={() => data.onGenerateL1?.()}
+          type="button"
+          onClick={() => {
+            if (data.onGenerateL1) data.onGenerateL1();
+            else if (data.onStartWash) data.onStartWash();
+          }}
           disabled={fileCount === 0}
-          className="w-full py-2 px-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:from-gray-800 disabled:to-gray-800 disabled:text-gray-500 text-white rounded-lg font-bold text-xs transition shadow-lg shadow-cyan-950 flex items-center justify-center space-x-1.5"
+          className="nodrag cursor-pointer select-none w-full py-2.5 px-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:from-gray-800 disabled:to-gray-800 disabled:text-gray-500 text-white rounded-lg font-bold text-xs transition shadow-lg shadow-cyan-950 flex items-center justify-center space-x-1.5 active:scale-[0.98]"
         >
-          <span>锁定素材并生成 L1 粗洗</span>
+          <span>锁定素材并生成 L1 粗洗 →</span>
         </button>
       </div>
 

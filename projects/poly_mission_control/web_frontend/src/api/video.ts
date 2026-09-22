@@ -54,59 +54,154 @@ export async function executeRoughWash(
   minSilenceDurationSec: number,
   ratio?: string
 ): Promise<any> {
-  const res = await fetch('/api/video/rough-wash', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      files,
-      silence_threshold_db: silenceDb,
-      silence_db: silenceDb,
-      min_silence_sec: minSilenceDurationSec,
-      min_silence_duration_sec: minSilenceDurationSec,
-      ratio,
-    }),
-  });
-  return res.json();
+  try {
+    const res = await fetch('/api/video/rough-wash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        files,
+        silence_threshold_db: Math.round(silenceDb),
+        min_silence_sec: minSilenceDurationSec,
+        ratio,
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: `服务器返回状态 ${res.status}: ${text}` };
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
 }
 
 export async function listProjects(): Promise<ProjectSummary[]> {
-  const res = await fetch('/api/video/projects');
-  return res.json();
+  try {
+    const res = await fetch('/api/video/projects');
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.projects)) return data.projects;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 export async function saveProject(name: string, data: any): Promise<any> {
-  const res = await fetch('/api/video/projects/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, data }),
-  });
-  return res.json();
+  try {
+    const res = await fetch('/api/video/projects/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, data }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: text };
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
 }
 
 export async function loadProject(name: string): Promise<any> {
-  const res = await fetch(`/api/video/projects/load?name=${encodeURIComponent(name)}`);
-  return res.json();
+  try {
+    const res = await fetch(`/api/video/projects/load?name=${encodeURIComponent(name)}`);
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: text };
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
 }
 
+export async function deleteProject(name: string): Promise<any> {
+  try {
+    const res = await fetch(`/api/video/projects/delete?name=${encodeURIComponent(name)}`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: text };
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
+}
+
+
 export async function downloadRemoteVideos(urls: string[]): Promise<any> {
-  const res = await fetch('/api/video/download-url', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ urls }),
-  });
-  return res.json();
+  try {
+    const res = await fetch('/api/video/download-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: text };
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
 }
 
 export async function detectVideoRotation(file: string): Promise<any> {
-  const res = await fetch(`/api/video/detect-rotation?file=${encodeURIComponent(file)}`);
-  return res.json();
+  try {
+    const res = await fetch(`/api/video/detect-rotation?file=${encodeURIComponent(file)}`);
+    if (!res.ok) return { success: false, rotation: 0 };
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, rotation: 0, error: err?.message || String(err) };
+  }
 }
 
 export async function fixVideoOrientation(file: string, rotation: number): Promise<any> {
-  const res = await fetch('/api/video/fix-orientation', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ file, rotation }),
-  });
-  return res.json();
+  try {
+    const res = await fetch('/api/video/fix-orientation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file, rotation }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: text };
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
 }
+
+export async function createVideoTask(
+  name: string,
+  taskType: string,
+  inputFile: string,
+  params?: any
+): Promise<any> {
+  try {
+    const res = await fetch('/api/video/tasks/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        task_type: taskType,
+        input_file: inputFile,
+        params,
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: text };
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
+}
+

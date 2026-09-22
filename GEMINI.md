@@ -54,3 +54,15 @@
 - **自启拉起入口定点**：`/Users/hi/niuma/scripts/boot_autostart.sh`
 - **服务管理脚本定点**：`/Users/hi/niuma/scripts/manage_services.sh`（已软链接至 `bin/manage_services` 与 `~/.local/bin/manage_services`）
 - **自启策略**：配置 `AbandonProcessGroup: true`，开机登录后等待 5 秒网络初始化，随后全量静默拉起 6 大常驻守护进程（Mission Control 8999、Telegram Bot 8090、System Keeper、Proxy Checker、LAN File Server 8888、Hysteria 2），启动日志记录于 `/Users/hi/niuma/launchd_boot.log`。
+
+## 12. 自媒体剪辑中枢 (Mission Control) 全自动双轨与工程持久化铁律 (Video Studio & Persistence Law)
+- **工程持久化与反序列化全量恢复**：项目保存与读取接口必须全状态对齐。载入已有工程时，必须完整反序列化并复原 L0 素材池、L1 粗剪切片与停顿、L2 赛道导演与提示词、L3 多轨分镜与草稿、L4 压制配置。载入后必须调用 `rfInstance.fitView` 自动聚焦居中。
+- **全流程双轨闭环流水线**：
+  - **L0 素材接入**：多选上传、远端拉取、局域网直传，支持 90/180 度物理无损旋转摆正。
+  - **L1 智能粗剪**：静音门限过滤，批量素材无损流切与停顿切片检查。
+  - **L2 爆款赛道导演**：12 大垂直赛道 × 6 大爆款细分角色，8 大平台避坑与提示词锚点。
+  - **L3 剪映精修工作台**：智能叙事（`video_smart_storyteller`）、动态花字（`video_caption_styler`）、情绪BGM与音效（`video_bgm_mood_matcher`）、B-Roll插屏（`video_b_roll_visualizer`），双轨直通本地剪映草稿。
+  - **L4 M2硬件压制**：原生 VideoToolbox 加速出片，成品直达 `/Users/hi/niuma/video_workspace/outputs`。
+- **小文件解耦契约**：前端 React/Preact 组件与 Hook 严格拆分为单一职责小文件（如 `studioNodeBuilders.ts`、`studioCanvasActions.ts`、`L1SegmentsInspector.tsx`、`L2SectorSelector.tsx`、`L2PlatformCard.tsx`），保证所有代码文件严格小于 250 行。
+- **禁止使用表情符号**：严禁在前端代码、系统输出、弹窗提示及与用户沟通中包含任何 Emoji。
+

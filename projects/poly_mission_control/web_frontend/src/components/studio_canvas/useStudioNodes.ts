@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'preact/hooks';
 import { useNodesState } from '@xyflow/react';
-import { AspectRatio, TrackItem, KeepSegmentItem, CutSegmentItem, NodeL0Data, NodeL1Data, NodeL2Data, NodeL3Data, NodeL4Data } from './types';
+import { AspectRatio, TrackItem, KeepSegmentItem, CutSegmentItem, NodeL3Data, NodeL4Data } from './types';
+import { buildNodeL0Data, buildNodeL1Data, buildNodeL2Data } from './studioNodeBuilders';
+import { executeRenderTask } from './studioCanvasActions';
 
 export interface UseStudioNodesProps {
   ratio: AspectRatio;
@@ -15,6 +17,14 @@ export interface UseStudioNodesProps {
   minSilenceDurationSec: number;
   directorId: string;
   platformId: string;
+  sectorId?: string;
+  setSectorId?: (id: string) => void;
+  subOptionId?: string;
+  setSubOptionId?: (id: string) => void;
+  directorPrompt?: string;
+  setDirectorPrompt?: (prompt: string) => void;
+  topic?: string;
+  setTopic?: (topic: string) => void;
   draftReady: boolean;
   renderProgress: number;
   isRendering: boolean;
@@ -45,50 +55,53 @@ export interface UseStudioNodesProps {
 }
 
 export function useStudioNodes(props: UseStudioNodesProps) {
-  const [sectorId, setSectorId] = useState('xuanxue');
-  const [subOptionId, setSubOptionId] = useState('xx_mingpan');
-  const [directorPrompt, setDirectorPrompt] = useState('爆款自媒体玄学名人命盘视频导演');
-  const [topic, setTopic] = useState('');
+  const [localSectorId, setLocalSectorId] = useState('xuanxue');
+  const [localSubOptionId, setLocalSubOptionId] = useState('xx_mingpan');
+  const [localDirectorPrompt, setLocalDirectorPrompt] = useState('爆款自媒体玄学名人命盘视频导演');
+  const [localTopic, setLocalTopic] = useState('');
+  const [outputFile, setOutputFile] = useState<string>('');
 
-  const nodeL0Data: NodeL0Data = {
+  const sectorId = props.sectorId ?? localSectorId;
+  const subOptionId = props.subOptionId ?? localSubOptionId;
+  const directorPrompt = props.directorPrompt ?? localDirectorPrompt;
+  const topic = props.topic ?? localTopic;
+
+  const updateSectorId = props.setSectorId ?? setLocalSectorId;
+  const updateSubOptionId = props.setSubOptionId ?? setLocalSubOptionId;
+  const updateDirectorPrompt = props.setDirectorPrompt ?? setLocalDirectorPrompt;
+  const updateTopic = props.setTopic ?? setLocalTopic;
+
+  const nodeL0Data = buildNodeL0Data({
     ratio: props.ratio,
     files: props.files,
     selectedFile: props.selectedFile,
-    onAddFiles: () => props.setMediaPickerOpen(true),
-    onRotateFile: (target: any, deg?: number) => {
-      const path = typeof target === 'number' ? props.files[target] : target;
-      if (path) props.handleRotateFile(path, deg);
-    },
-    onRemoveFile: (target: any) => {
-      const path = typeof target === 'number' ? props.files[target] : target;
-      if (path) {
-        props.setFiles((prev) => prev.filter((f) => f !== path));
-        if (props.selectedFile === path) {
-          props.setSelectedFile(props.files.find((f) => f !== path) || '');
-        }
-      }
-    },
-    onSelectFile: props.setSelectedFile,
-  };
+    onOpenMediaPicker: () => props.setMediaPickerOpen(true),
+    handleStartWash: props.handleStartWash,
+    handleRotateFile: props.handleRotateFile,
+    setFiles: props.setFiles,
+    setSelectedFile: props.setSelectedFile,
+    setRatio: props.setRatio,
+    onOpenPreview: props.onOpenPreview,
+  });
 
-  const nodeL1Data: NodeL1Data = {
+  const nodeL1Data = buildNodeL1Data({
     ratio: props.ratio,
     files: props.files,
     selectedFile: props.selectedFile,
     cleanFile: props.cleanFile,
-    status: props.washStatus,
-    stats: props.washStats,
+    washStatus: props.washStatus,
+    washStats: props.washStats,
     keepSegments: props.keepSegments,
     cutSegments: props.cutSegments,
     silenceDb: props.silenceDb,
     minSilenceDurationSec: props.minSilenceDurationSec,
-    originalFile: props.selectedFile,
-    onStartWash: props.handleStartWash,
-    onApplyCutToL3: props.handleApplyCutToL3,
-    onProceedToL2: props.handleProceedToL2,
-    onUpdateSilenceDb: props.setSilenceDb,
-    onUpdateMinSilence: props.setMinSilenceDurationSec,
-  };
+    handleStartWash: props.handleStartWash,
+    handleApplyCutToL3: props.handleApplyCutToL3,
+    handleProceedToL2: props.handleProceedToL2,
+    setSilenceDb: props.setSilenceDb,
+    setMinSilenceDurationSec: props.setMinSilenceDurationSec,
+    onOpenPreview: props.onOpenPreview,
+  });
 
   const handleGenerateDraft = useCallback(async () => {
     try {
@@ -117,7 +130,7 @@ export function useStudioNodes(props: UseStudioNodesProps) {
         }));
         props.setTrackItems(normalizedTracks);
         props.setDraftReady(true);
-        alert(`分镜草稿生成完毕！已生成 ${normalizedTracks.length} 个轨道元素`);
+        alert(`分镜草稿生成完毕，已生成 ${normalizedTracks.length} 个轨道元素`);
       } else {
         alert(`生成草稿失败: ${data.error || '未知异常'}`);
       }
@@ -126,7 +139,7 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     }
   }, [sectorId, props.platformId, topic, directorPrompt, props.cleanFile, props.selectedFile]);
 
-  const nodeL2Data: NodeL2Data = {
+  const nodeL2Data = buildNodeL2Data({
     ratio: props.ratio,
     sectorId,
     directorId: props.directorId,
@@ -138,17 +151,17 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     generatedTracks: props.trackItems,
     sourceSegments: props.keepSegments,
     isActiveFocus: props.l2ActiveFocus,
-    onUpdate: (updates) => {
-      if (updates.sectorId) setSectorId(updates.sectorId);
+    onUpdate: (updates: any) => {
+      if (updates.sectorId) updateSectorId(updates.sectorId);
       if (updates.directorId) props.setDirectorId(updates.directorId);
-      if (updates.subOptionId) setSubOptionId(updates.subOptionId);
-      if (updates.directorPrompt) setDirectorPrompt(updates.directorPrompt);
+      if (updates.subOptionId) updateSubOptionId(updates.subOptionId);
+      if (updates.directorPrompt) updateDirectorPrompt(updates.directorPrompt);
       if (updates.platformId) props.setPlatformId(updates.platformId);
-      if (updates.topic !== undefined) setTopic(updates.topic);
+      if (updates.topic !== undefined) updateTopic(updates.topic);
     },
     onGenerateDraft: handleGenerateDraft,
     onProceedToL3: props.handleProceedToL3,
-  };
+  });
 
   const nodeL3Data: NodeL3Data = {
     items: props.trackItems,
@@ -161,20 +174,15 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     status: props.isRendering ? 'rendering' : 'idle',
     progress: props.renderProgress,
     isActiveFocus: props.l4ActiveFocus,
+    outputFile,
     onStartRender: () => {
-      props.setIsRendering(true);
-      props.setRenderProgress(10);
-      const timer = setInterval(() => {
-        props.setRenderProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(timer);
-            props.setIsRendering(false);
-            alert('成片压制完成！已同步保存至 outputs 目录。');
-            return 100;
-          }
-          return prev + 15;
-        });
-      }, 800);
+      const targetFile = props.cleanFile || props.selectedFile || (props.files && props.files[0]);
+      executeRenderTask({
+        targetFile,
+        setIsRendering: props.setIsRendering,
+        setRenderProgress: props.setRenderProgress,
+        setOutputFile,
+      });
     },
   };
 
@@ -188,24 +196,46 @@ export function useStudioNodes(props: UseStudioNodesProps) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
 
+  const resetNodesLayout = useCallback(() => {
+    const DEFAULT_POSITIONS: Record<string, { x: number; y: number }> = {
+      'node-l0': { x: 50, y: 150 },
+      'node-l1': { x: 450, y: 150 },
+      'node-l2': { x: 860, y: 150 },
+      'node-l3': { x: 1250, y: 150 },
+      'node-l4': { x: 1640, y: 150 },
+    };
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        position: DEFAULT_POSITIONS[node.id] || node.position,
+      }))
+    );
+    setOutputFile('');
+  }, [setNodes]);
+
   useEffect(() => {
-    setNodes([
-      { id: 'node-l0', type: 'nodeL0', position: { x: 50, y: 150 }, data: nodeL0Data },
-      { id: 'node-l1', type: 'nodeL1', position: { x: 450, y: 150 }, data: nodeL1Data },
-      { id: 'node-l2', type: 'nodeL2', position: { x: 860, y: 150 }, data: nodeL2Data },
-      { id: 'node-l3', type: 'nodeL3', position: { x: 1250, y: 150 }, data: nodeL3Data },
-      { id: 'node-l4', type: 'nodeL4', position: { x: 1640, y: 150 }, data: nodeL4Data },
-    ] as any);
+    setNodes((currentNodes) =>
+      currentNodes.map((n) => {
+        if (n.id === 'node-l0') return { ...n, data: nodeL0Data };
+        if (n.id === 'node-l1') return { ...n, data: nodeL1Data };
+        if (n.id === 'node-l2') return { ...n, data: nodeL2Data };
+        if (n.id === 'node-l3') return { ...n, data: nodeL3Data };
+        if (n.id === 'node-l4') return { ...n, data: nodeL4Data };
+        return n;
+      })
+    );
   }, [
     props.ratio, props.files, props.selectedFile, props.cleanFile, props.washStatus,
     props.washStats, props.keepSegments, props.cutSegments, props.silenceDb,
     props.minSilenceDurationSec, sectorId, subOptionId, directorPrompt, props.platformId,
     topic, props.draftReady, props.trackItems, props.l2ActiveFocus, props.l3ActiveFocus,
-    props.l4ActiveFocus, props.isRendering, props.renderProgress
+    props.l4ActiveFocus, props.isRendering, props.renderProgress, props.onOpenPreview,
+    outputFile
   ]);
 
   return {
     nodes,
     onNodesChange,
+    resetNodesLayout,
   };
 }

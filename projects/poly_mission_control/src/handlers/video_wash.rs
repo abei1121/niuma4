@@ -11,10 +11,10 @@ const PADDING_SEC: f64 = 0.15;
 #[derive(Deserialize)]
 pub struct RoughWashReq {
     pub files: Vec<String>,
-    #[serde(alias = "silence_db")]
-    pub silence_threshold_db: Option<i32>,
-    #[serde(alias = "min_silence_duration_sec")]
+    pub silence_threshold_db: Option<f64>,
+    pub silence_db: Option<f64>,
     pub min_silence_sec: Option<f64>,
+    pub min_silence_duration_sec: Option<f64>,
     pub padding_sec: Option<f64>,
     pub ratio: Option<String>,
 }
@@ -85,8 +85,8 @@ pub async fn execute_rough_wash(Json(req): Json<RoughWashReq>) -> impl IntoRespo
     }
 
     let _ = fs::create_dir_all(LIB_DIR);
-    let threshold = req.silence_threshold_db.unwrap_or(-28);
-    let min_sec = req.min_silence_sec.unwrap_or(0.6);
+    let threshold = req.silence_threshold_db.or(req.silence_db).unwrap_or(-28.0) as i32;
+    let min_sec = req.min_silence_sec.or(req.min_silence_duration_sec).unwrap_or(0.6);
     let padding = req.padding_sec.unwrap_or(0.12);
 
     let first_stem = Path::new(valid_files[0]).file_stem().and_then(|s| s.to_str()).unwrap_or("video");

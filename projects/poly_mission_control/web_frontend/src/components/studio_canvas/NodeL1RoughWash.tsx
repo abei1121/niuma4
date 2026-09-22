@@ -2,6 +2,7 @@ import { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
 import { Handle, Position } from '@xyflow/react';
 import { NodeL1Data } from './types';
+import { L1SegmentsInspector } from './L1SegmentsInspector';
 
 interface Props {
   data: NodeL1Data;
@@ -9,8 +10,6 @@ interface Props {
 
 export const NodeL1RoughWash: FunctionalComponent<Props> = ({ data }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showInspector, setShowInspector] = useState(false);
-  const [activeTab, setActiveTab] = useState<'cuts' | 'keeps'>('cuts');
   const [compareMode, setCompareMode] = useState<'clean' | 'original'>('clean');
   const [autoSkip, setAutoSkip] = useState(true);
   const [playheadSec, setPlayheadSec] = useState(0);
@@ -84,13 +83,25 @@ export const NodeL1RoughWash: FunctionalComponent<Props> = ({ data }) => {
                 {compareMode === 'clean' ? '[跳音] ' : '[原声] '}{currentFileName}
               </span>
               <div className="flex items-center space-x-1 shrink-0">
-                <button onClick={() => { const nm = compareMode === 'clean' ? 'original' : 'clean'; setCompareMode(nm); setAutoSkip(nm === 'clean'); }} className={`px-1.5 py-0.5 rounded text-[10px] border transition ${compareMode === 'clean' ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700' : 'bg-gray-800 text-gray-300 border-gray-700'}`}>
+                <button
+                  type="button"
+                  onClick={() => { const nm = compareMode === 'clean' ? 'original' : 'clean'; setCompareMode(nm); setAutoSkip(nm === 'clean'); }}
+                  className={`nodrag cursor-pointer px-1.5 py-0.5 rounded text-[10px] border transition ${compareMode === 'clean' ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700' : 'bg-gray-800 text-gray-300 border-gray-700'}`}
+                >
                   {compareMode === 'clean' ? '去停顿:开' : '去停顿:关'}
                 </button>
-                <button onClick={() => setIsExpanded(!isExpanded)} className="px-1.5 py-0.5 bg-gray-800 hover:bg-gray-700 text-emerald-300 rounded text-[10px] border border-gray-700 transition">
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="nodrag cursor-pointer px-1.5 py-0.5 bg-gray-800 hover:bg-gray-700 text-emerald-300 rounded text-[10px] border border-gray-700 transition"
+                >
                   {isExpanded ? '收起' : '放大'}
                 </button>
-                <button onClick={() => data.onOpenPreview?.(currentVideoUrl, `[监看] ${currentFileName}`)} className="px-1.5 py-0.5 bg-emerald-950/80 hover:bg-emerald-850 text-emerald-200 rounded text-[10px] border border-emerald-600/50 transition font-bold">
+                <button
+                  type="button"
+                  onClick={() => data.onOpenPreview?.(currentVideoUrl, `[监看] ${currentFileName}`)}
+                  className="nodrag cursor-pointer px-1.5 py-0.5 bg-emerald-950/80 hover:bg-emerald-850 text-emerald-200 rounded text-[10px] border border-emerald-600/50 transition font-bold"
+                >
                   大屏
                 </button>
               </div>
@@ -136,84 +147,81 @@ export const NodeL1RoughWash: FunctionalComponent<Props> = ({ data }) => {
       </div>
 
       {/* 门限调节 */}
-      <div className="space-y-2 text-xs">
+      <div className="space-y-2 text-xs nodrag">
         <div>
           <div className="flex justify-between text-gray-400 mb-1">
             <span>静音过滤阈值</span>
-            <span className="text-emerald-400 font-mono font-bold">{data.silenceThresholdDb} dB</span>
+            <span className="text-emerald-400 font-mono font-bold">{data.silenceDb ?? data.silenceThresholdDb ?? -28} dB</span>
           </div>
-          <input type="range" min="-50" max="-20" step="1" value={data.silenceThresholdDb} onInput={(e: any) => data.onUpdate?.({ silenceThresholdDb: Number(e.target.value) })} className="w-full accent-emerald-500 bg-gray-800 cursor-pointer h-1.5 rounded nodrag" />
+          <input
+            type="range"
+            min="-50"
+            max="-20"
+            step="1"
+            value={data.silenceDb ?? data.silenceThresholdDb ?? -28}
+            onInput={(e: any) => {
+              const val = Number(e.target.value);
+              if (data.onUpdate) data.onUpdate({ silenceDb: val, silenceThresholdDb: val });
+              if (data.onUpdateSilenceDb) data.onUpdateSilenceDb(val);
+            }}
+            className="w-full accent-emerald-500 bg-gray-800 cursor-pointer h-1.5 rounded nodrag"
+          />
         </div>
         <div>
           <div className="flex justify-between text-gray-400 mb-1">
             <span>最小停顿门限</span>
-            <span className="text-emerald-400 font-mono font-bold">{data.minSilenceDurationSec} 秒</span>
+            <span className="text-emerald-400 font-mono font-bold">{data.minSilenceDurationSec ?? 0.6} 秒</span>
           </div>
-          <input type="range" min="0.2" max="1.5" step="0.1" value={data.minSilenceDurationSec} onInput={(e: any) => data.onUpdate?.({ minSilenceDurationSec: Number(e.target.value) })} className="w-full accent-emerald-500 bg-gray-800 cursor-pointer h-1.5 rounded nodrag" />
+          <input
+            type="range"
+            min="0.2"
+            max="1.5"
+            step="0.1"
+            value={data.minSilenceDurationSec ?? 0.6}
+            onInput={(e: any) => {
+              const val = Number(e.target.value);
+              if (data.onUpdate) data.onUpdate({ minSilenceDurationSec: val });
+              if (data.onUpdateMinSilence) data.onUpdateMinSilence(val);
+            }}
+            className="w-full accent-emerald-500 bg-gray-800 cursor-pointer h-1.5 rounded nodrag"
+          />
         </div>
       </div>
 
       {/* 剪辑明细抽屉 */}
       {hasSegments && (
-        <div className="bg-gray-900/90 border border-gray-800 rounded-lg p-2 text-[10px] space-y-1.5">
-          <div className="flex items-center justify-between border-b border-gray-800 pb-1">
-            <div className="flex space-x-2">
-              <button onClick={() => { setActiveTab('cuts'); setShowInspector(true); }} className={`font-mono font-bold transition ${activeTab === 'cuts' ? 'text-rose-400' : 'text-gray-500'}`}>
-                已切除停顿 ({data.cutSegments?.length || 0})
-              </button>
-              <span className="text-gray-700">|</span>
-              <button onClick={() => { setActiveTab('keeps'); setShowInspector(true); }} className={`font-mono font-bold transition ${activeTab === 'keeps' ? 'text-emerald-400' : 'text-gray-500'}`}>
-                保留发音 ({data.keepSegments?.length || 0})
-              </button>
-            </div>
-            <button onClick={() => setShowInspector(!showInspector)} className="text-gray-400 hover:text-gray-200">
-              {showInspector ? '收起' : '展开'}
-            </button>
-          </div>
-
-          {showInspector && (
-            <div className="max-h-36 overflow-y-auto space-y-1 pr-1 nodrag font-mono">
-              {activeTab === 'cuts' ? (
-                data.cutSegments?.map((cut) => (
-                  <div key={cut.index} className="flex justify-between bg-black/50 px-1.5 py-0.5 rounded border border-rose-950 text-gray-300">
-                    <span className="text-rose-400 font-bold truncate max-w-[120px]">{cut.label} #{cut.index}</span>
-                    <span>{cut.start}s - {cut.end}s</span>
-                    <span className="text-rose-300">-{cut.duration}s</span>
-                  </div>
-                ))
-              ) : (
-                data.keepSegments?.map((seg) => (
-                  <div key={seg.index} className="flex justify-between bg-black/50 px-1.5 py-0.5 rounded border border-emerald-950 text-gray-300">
-                    <span className="text-emerald-400 font-bold truncate max-w-[120px]">[{seg.source_file || '素材'}] #{seg.index}</span>
-                    <span>{seg.start}s - {seg.end}s</span>
-                    <span className="text-emerald-300">+{seg.duration}s</span>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
+        <L1SegmentsInspector
+          cutSegments={data.cutSegments}
+          keepSegments={data.keepSegments}
+        />
       )}
 
       {/* 底部操作区 */}
-      <div className="pt-2 border-t border-gray-800 space-y-2">
-        <button onClick={() => data.onStartWash?.()} disabled={isWashing} className="w-full py-2 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:from-gray-800 disabled:to-gray-800 text-white rounded-lg font-bold text-xs transition shadow-lg shadow-emerald-950 flex items-center justify-center space-x-1.5">
+      <div className="pt-2 border-t border-gray-800 space-y-2 nodrag">
+        <button
+          type="button"
+          onClick={() => data.onStartWash?.()}
+          disabled={isWashing}
+          className="nodrag cursor-pointer select-none w-full py-2 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:from-gray-800 disabled:to-gray-800 text-white rounded-lg font-bold text-xs transition shadow-lg shadow-emerald-950 flex items-center justify-center space-x-1.5 active:scale-[0.98]"
+        >
           <span>{isWashing ? '多段粗剪中...' : hasCleanFile ? `重新执行多段粗剪 (${fileList.length}条)` : `合并执行多段粗剪 (${fileList.length}条)`}</span>
         </button>
 
         {hasSegments && (
-          <div className="space-y-1.5 pt-1">
+          <div className="space-y-1.5 pt-1 nodrag">
             <button
+              type="button"
               onClick={() => data.onProceedToL2?.(data.keepSegments || [])}
-              className="w-full py-2 px-2.5 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 hover:from-amber-500 hover:to-yellow-400 border border-amber-400/50 text-gray-950 font-black text-xs rounded-lg transition shadow-lg shadow-amber-950/60 flex items-center justify-center space-x-1.5"
+              className="nodrag cursor-pointer select-none w-full py-2 px-2.5 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 hover:from-amber-500 hover:to-yellow-400 border border-amber-400/50 text-gray-950 font-black text-xs rounded-lg transition shadow-lg shadow-amber-950/60 flex items-center justify-center space-x-1.5 active:scale-[0.98]"
             >
               <span>连线流转至 L2 爆款导演 ({data.keepSegments?.length}段切片) →</span>
             </button>
-            <div className="flex justify-between items-center text-[10px] text-gray-400 px-1">
+            <div className="flex justify-between items-center text-[10px] text-gray-400 px-1 nodrag">
               <span className="text-emerald-400/90 font-mono">已就绪 {data.keepSegments?.length} 段净片</span>
               <button
+                type="button"
                 onClick={() => data.onApplyCutToL3?.(data.keepSegments || [])}
-                className="text-gray-400 hover:text-emerald-300 underline transition"
+                className="nodrag cursor-pointer text-gray-400 hover:text-emerald-300 underline transition"
               >
                 直传L3轨道
               </button>

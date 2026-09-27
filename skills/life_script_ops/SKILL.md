@@ -1,6 +1,6 @@
 ---
 name: life_script_ops
-description: 人生运势历 (obs.xiaojiucai.pro) 前端构建优化、Rust 鉴权微服务、站内造物主剧本流式推演引擎、动态流日运势真机、通用大模型接入与全生命周期运维技能。
+description: 人生运势历 (obs.xiaojiucai.pro) 前端构建优化、Rust 鉴权微服务、站内造物主剧本流式推演引擎、动态流日运势真机、官方私有闭环防护与全生命周期运维技能。
 triggers:
   - life_script_ops
   - obs_xiaojiucai
@@ -15,7 +15,7 @@ triggers:
 ## 概述
 《人生运势历》(`obs.xiaojiucai.pro`) 是纯前端静态预压缩与纯 Rust 鉴权与流式推演微服务协同的高性能、低功耗全栈自治工程：
 1. **前端工程 (`/home/a/obsxiaojiucai/`)**：React 19 + Vite 6 + TypeScript + TailwindCSS + PWA，集成正统紫微斗数排盘、钦天四化飞星与来因宫立极、真太阳时校准、动态流日四化与吉忌真机引擎、24h 海报分享裂变解锁门槛、造物主人生剧本闭环流式推演、东方宣纸重墨高对比度排版、长图装裱导出与小韭菜俱乐部会员卡 (Club Pass) 鉴权及 Web3 钱包直连。
-2. **后端微服务 (`/home/a/obs_membership_rust/`)**：纯 Rust 构建（常驻内存仅 ~14MB），提供 ECDSA P-256 密码学签名防重放验签、三层梯队天命能量治理、`agy` 大模型流式推演管道与通用 OpenAI 兼容协议接入支持。
+2. **后端微服务 (`/home/a/obs_membership_rust/`)**：纯 Rust 构建（常驻内存仅 ~14MB），提供 ECDSA P-256 密码学签名防重放验签、三层梯队天命能量治理、`agy` 大模型流式推演管道与官方私有安全闭环守护。
 3. **专属客服与运维工具链 (`/home/a/bin/obs_code_tool`)**：本地毫秒级激活码查询、5 秒一键解绑重置（客服专职）、新卡批量入库及全局统计。
 4. **Nginx 零拷贝边缘**：Brotli / Gzip 静态双重预压缩直发，`/api/` 路由内聚反代至本地 Rust 服务（`127.0.0.1:8096`），配置专用非缓冲 SSE 直发管道。
 

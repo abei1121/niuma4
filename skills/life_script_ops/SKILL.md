@@ -57,11 +57,11 @@ triggers:
   - 俱乐部会员卡鉴权模态: `/home/a/obsxiaojiucai/components/PassPromptModal.tsx`（GRAM 钱包直连、链上会员卡核验、获取账号教程导航）
 - **造物主人生剧本 UI 矩阵**:
   - 沉浸式推演主模态: `/home/a/obsxiaojiucai/components/CreatorScriptModal.tsx`
-  - 顶栏状态与功能条: `/home/a/obsxiaojiucai/components/CreatorScriptHeader.tsx`（俱乐部会员卡专属 API 生效标示与永久能量）
+  - 顶栏状态与功能条: `/home/a/obsxiaojiucai/components/CreatorScriptHeader.tsx`（俱乐部会员卡专属永久能量与每日重置）
   - 非会员引导与容灾卡片: `/home/a/obsxiaojiucai/components/CreatorScriptErrorNotice.tsx`（Club Pass 尊享特权与激活码输入引导）
   - 东方宣纸排版渲染器: `/home/a/obsxiaojiucai/components/ScriptRenderer.tsx`
   - 命书宣纸长图装裱模态: `/home/a/obsxiaojiucai/components/CreatorScriptPosterModal.tsx`
-  - 会员卡专属自定义 API 配置抽屉: `/home/a/obsxiaojiucai/components/NftCustomApiPanel.tsx`
+  - 推演准备与知情确认大厅: `/home/a/obsxiaojiucai/components/CreatorScriptStartGate.tsx`
 - **Web3 与网络通信核心**:
   - 异步按需 TonConnect 桥接: `/home/a/obsxiaojiucai/components/AsyncTonConnect.tsx`（<= 250 行，挂起唤起机制，本地 wallets 静态直发）
   - 钱包与会员卡状态 Hook: `/home/a/obsxiaojiucai/hooks/useWeb3Pass.ts`（双向事件总线，历史地址自动预载）
@@ -138,21 +138,23 @@ triggers:
 - **严格 1 机 1 卡**：文案统一规范为「绑定激活码」，单一激活码与单台硬件设备唯一强绑定，能量扣完即止。
 
 ### 6. 三层梯队天命能量与鉴权治理规范
+- **全命盘全局推演**：单次消耗 **6 点天命能量**；推演前在准备大厅显式展示扣费规则与当前余额，需用户主动确认，严禁静默扣费；
+- **后续导师答疑追问**：单次消耗 **1 点天命能量**；
+- **历史档案终身免费**：已生成用户全盘剧本自动本地哈希存档，二次进入零能量消耗，支持永久免费回看与长图装裱导出；
 - **非会员 (Free)**：
   - 运势详解与万年历：需分享海报获取 24h 特权；
-  - 造物主剧本：能量 0 点，点击中州/钦天不发起后台计算，直接呈现清晰引导卡片（绑定激活码或连接俱乐部会员卡）；输入框锁定，严禁使用自定义 API。
+  - 造物主剧本：能量 0 点，进入推演大厅呈现清晰引导卡片（绑定激活码或连接俱乐部会员卡）；
 - **激活码会员 (Activation Code)**：
   - 能量：单码内含 30 点专属天命能量，扣完即止；
-  - 权限：严格执行 **1 机 1 卡** 设备绑定；必须在 iOS PWA 或 Android APK 客户端内绑定；不可配置自定义 API。
+  - 权限：严格执行 **1 机 1 卡** 设备绑定；必须在 iOS PWA 或 Android APK 客户端内绑定；
 - **小韭菜俱乐部会员卡 (Club Pass Holder)**：
-  - 能量：每日子时自动回满 10 点专属能量（免除买码烦恼）；
-  - 尊享特权：**独家解锁自定义大模型 API 接入特权**，支持免消耗能量无限次叩问推演。
+  - 能量：每日子时自动重置回满 10 点专属能量（免除买码烦恼）；
+  - 尊享特权：每日专享 10 点免费天命能量，支持每日全盘推演与多次深度追问。
 
-### 7. 通用大模型接入协议规范 (OpenAI-Compatible BYOK)
-- **协议标准化**：支持全球通用的 OpenAI 兼容格式（`Base URL` + `API Key` + `Model`）；
-- **品牌与模型脱敏**：全站严禁向用户暴露底层具体使用的模型供应商，统一呈现为“自定义大模型 API (OpenAI 协议)”；
-- **后端双轨解析**：Rust 后端在同一 SSE 管道中自适应解析通用 OpenAI 的 `choices[0].delta.content` 与原生系统的 `step_update.text_delta`；
-- **权限硬核校验**：Rust 后端强制校验请求是否为已验资通过的俱乐部会员卡持仓地址；非会员伪造参数直接返回 `403 Forbidden`。
+### 7. 商业机密绝对隔离与封闭防护规范 (Zero-BYOK Policy)
+- **彻底废除用户自定义 API (BYOK)**：全站完全移除一切自定义 API 输入入口与宣传文案，物理阻断用户利用自建抓包站或中转平台后台窥探窃取宗师提示词（中州派/钦天派独家法门）；
+- **官方私密闭环调度**：全盘推演与追问全部由服务端私密引擎直接调度，通信链路 100% 封闭，对外只下发渲染结果，提示词绝不出内网；
+- **防泄密绝杀红线**：提示词内嵌绝杀防泄密守卫，坚决拦截一切越狱套话行为。
 
 ### 8. 命理算法正统法则（紫微 vs 八字）
 - **八字换年依节气**：八字以二十四节气中的「立春」换年；

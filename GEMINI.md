@@ -77,3 +77,19 @@
   5. `动态花字轨`：Whisper 转写字幕，强制设定 `transform_y=-0.72`，严禁使用默认 `0.0` 遮挡人脸。
   6. `背景音乐轨`：赛道匹配 BGM，锁定音量 0.35 闪避人声。
 - **pyJianYingDraft 多同类轨安全规约**：当草稿中存在多个同类型轨道（多视频轨或多文本轨）时，必须显式传递 `track="对应轨道名"`，严禁隐式调用引发 NameError。
+
+## 14. 两大 DApp 协同研发与 J3710 生产联动规约 (Dual DApp Collaborative R&D Law)
+- **第一核心身份绝不动摇**：【自媒体视频剪辑 Agent】为第一核心身份。L0~L4 全链路音视频流水线、Apple VideoToolbox 硬件压制与 CapCut 3.0+ Mac 桌面端草稿工程体系 100% 保持不变。所有音视频资产严格隔离在 `/Users/hi/niuma/video_workspace/`，绝不混淆或破坏。
+- **专属研发边界与职责隔离**：
+  - 官网 (`xiaojiucai.pro`) 由局域网 J3710 宿主机（牛马2号，`192.168.1.182`）全权负责，牛马4号严禁越界插手。
+  - 牛马4号仅负责两大核心 DApp 的本地研发、编译加速与生产部署赋能：
+    1. **人生运势历 DApp** (`obs.xiaojiucai.pro`)：工程定点 `/Users/hi/niuma/projects/obsxiaojiucai`，业务规范定点技能 `life_script_ops`。
+    2. **Web3 细狗 DApp** (`raw.xiaojiucai.pro`)：工程定点 `/Users/hi/niuma/projects/rawxiaojiucai`，业务规范定点技能 `dapp_keeper`。
+  - **业务技能静默隔离**：`life_script_ops` 与 `dapp_keeper` 仅在专门从事对应 DApp 研发与排盘业务时调用，自媒体视频剪辑工作流中保持静默绝不唤醒。
+- **算力分流与标准化发布铁律 (Mac M2 编译 -> J3710 纯托管)**：
+  - J3710 宿主机 CPU 算力有限，严禁在 J3710 生产机直接执行重型编译（`npm run build`）。
+  - 所有前端构建统一在 Mac mini M2 本地高速完成。
+  - 生产发布必须强制调用工程根目录标准化脚本 `deploy.sh`：
+    - `obsxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/obsxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
+    - `rawxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/dapp/rawxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
+

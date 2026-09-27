@@ -31,7 +31,7 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
 
   return (
     <div
-      className={`bg-[#0f172a]/95 border-2 border-cyan-500/50 rounded-xl p-4 shadow-xl shadow-cyan-950/40 text-gray-200 space-y-3 transition-all duration-200 ${
+      className={`relative bg-[#0f172a]/95 border-2 border-cyan-500/50 rounded-xl p-4 shadow-xl shadow-cyan-950/40 text-gray-200 space-y-3 transition-all duration-200 ${
         isExpanded ? 'w-96' : 'w-88'
       }`}
     >
@@ -137,7 +137,9 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
       {/* 素材列表 */}
       <div className="space-y-1.5 text-xs nodrag">
         <div className="flex justify-between items-center text-gray-400">
-          <span>待处理素材 ({fileCount})</span>
+          <span className={data.isWashed ? 'text-emerald-400 font-bold' : ''}>
+            {data.isWashed ? `已录入素材 (${fileCount} · 已流转粗剪)` : `待处理素材 (${fileCount})`}
+          </span>
           <span className="text-gray-500 text-[10px]">点击切换播放</span>
         </div>
 
@@ -160,6 +162,11 @@ export const NodeL0Ingest: FunctionalComponent<Props> = ({ data }) => {
                   <span className="truncate font-mono flex-1" title={f}>
                     {i + 1}. {f.split('/').pop()}
                   </span>
+                  {data.isWashed && (
+                    <span className="px-1 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/80 text-[9px] shrink-0 font-mono">
+                      已就绪
+                    </span>
+                  )}
                   <div className="flex items-center space-x-1 shrink-0">
                     <button
                       type="button"

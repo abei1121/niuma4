@@ -31,6 +31,29 @@ pub struct GeneratedTrackItem {
     pub detail: Option<String>,
 }
 
+async fn analyze_audio_whisper(clean_file: &str, topic: &str, role: &str, plat: &str) -> Option<serde_json::Value> {
+    if !Path::new(clean_file).exists() {
+        return None;
+    }
+    let child = Command::new("/Users/hi/niuma/video_workspace/venv/bin/python3")
+        .args([
+            "/Users/hi/niuma/video_workspace/scripts/director_analyzer.py",
+            "--input", clean_file,
+            "--topic", topic,
+            "--role", role,
+            "--platform", plat,
+        ])
+        .output();
+
+    match tokio::time::timeout(Duration::from_secs(45), child).await {
+        Ok(Ok(out)) if out.status.success() => {
+            let res = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            serde_json::from_str::<serde_json::Value>(&res).ok()
+        }
+        _ => None,
+    }
+}
+
 async fn invoke_native_agy(prompt: &str) -> Option<String> {
     let child = Command::new("/Users/hi/niuma/bin/agy_wrapper")
         .arg("--print")
@@ -60,7 +83,6 @@ pub async fn generate_director_draft(Json(req): Json<DirectorDraftReq>) -> impl 
         .map(|f| Path::new(f).file_stem().and_then(|s| s.to_str()).unwrap_or("素材"))
         .unwrap_or("视频原片");
 
-    // 优先使用命主自由微调的赛道提示词，无则降级匹配预设
     let effective_role = req
         .custom_prompt
         .as_deref()
@@ -96,16 +118,42 @@ pub async fn generate_director_draft(Json(req): Json<DirectorDraftReq>) -> impl 
         _ => ("全网通用", "多端全网分发兼容，兼顾9:16竖屏与16:9居中安全区", "剔除单一平台专属黑话与导流语，恪守通用合规"),
     };
 
-    // 驱动原生 AGY 大模型推导爆款钩子与剧本拆解
-    let prompt = format!(
-        "你是顶级自媒体导演：【{}】。目标平台：【{}】（特点：{}；避坑：{}）。\n\
-        当前剪辑主题：【{}】。\n\
-        请以导演思维设计黄金前3秒：\n\
-        第一行：【黄金钩子标题】\n\
-        第二行：口播前3秒生死线台词（极强悬念与认知冲突，不超过50字）\n\
-        第三行：导演视听机位拆解简述（镜头动效与音效配合）",
-        effective_role, plat_name, plat_feature, plat_pitfall, topic
-    );
+    // 执行真实音频分析与台词提取
+    let analysis = if let Some(ref cf) = req.clean_file {
+        analyze_audio_whisper(cf, &topic, &effective_role, platform_id).await
+    } else {
+        None
+    };
+
+    let transcript_sample = analysis
+        .as_ref()
+        .and_then(|a| a["transcript_sample"].as_str())
+        .unwrap_or("");
+
+    // 驱动原生 AGY 结合真实台词推导爆款钩子与剧本拆解
+    let prompt = if !transcript_sample.is_empty() {
+        format!(
+            "你是顶级自媒体导演：【{}】。目标平台：【{}】（特点：{}；避坑：{}）。\n\
+            当前剪辑主题：【{}】。\n\
+            作者原片真实口播台词与时间戳如下：\n\
+            {}\n\n\
+            请以导演思维深度规划黄金前3秒爆点与分镜：\n\
+            第一行：【黄金钩子标题】（极具吸引力，切中赛道痛点）\n\
+            第二行：黄金前3秒生死线台词（从原片台词挑选或提炼最具悬念/认知冲突的一句话，不超过40字）\n\
+            第三行：导演视听机位拆解简述（镜头动效与音效配合）",
+            effective_role, plat_name, plat_feature, plat_pitfall, topic, transcript_sample
+        )
+    } else {
+        format!(
+            "你是顶级自媒体导演：【{}】。目标平台：【{}】（特点：{}；避坑：{}）。\n\
+            当前剪辑主题：【{}】。\n\
+            请以导演思维设计黄金前3秒：\n\
+            第一行：【黄金钩子标题】\n\
+            第二行：口播前3秒生死线台词（极强悬念与认知冲突，不超过50字）\n\
+            第三行：导演视听机位拆解简述（镜头动效与音效配合）",
+            effective_role, plat_name, plat_feature, plat_pitfall, topic
+        )
+    };
 
     let agy_insight = invoke_native_agy(&prompt).await;
 
@@ -127,62 +175,75 @@ pub async fn generate_director_draft(Json(req): Json<DirectorDraftReq>) -> impl 
         )
     };
 
-    let track_items = vec![
-        GeneratedTrackItem {
-            id: "1".into(),
-            track_type: "video".into(),
-            name: format!("01_{}开篇抓人视觉切片({})", role_short, file_stem),
-            start_sec: 0.0,
-            end_sec: 3.5,
-            color: "bg-blue-600 text-white".into(),
-            detail: Some("黄金前3秒核心视觉特写，剔除所有气口".into()),
-        },
-        GeneratedTrackItem {
-            id: "2".into(),
-            track_type: "subtitle".into(),
-            name: format!("【{}】{}: 底层真相", role_short, topic),
-            start_sec: 0.3,
-            end_sec: 3.5,
-            color: "bg-cyan-500 text-black".into(),
-            detail: Some("居中特大加粗高对比度花字".into()),
-        },
-        GeneratedTrackItem {
-            id: "3".into(),
-            track_type: "audio".into(),
-            name: "动感重音效_Whoosh+赛道专属BGM".into(),
-            start_sec: 0.0,
-            end_sec: 30.0,
-            color: "bg-emerald-600 text-white".into(),
-            detail: Some("智能音量侧链闪避(-18dB)".into()),
-        },
-        GeneratedTrackItem {
-            id: "4".into(),
-            track_type: "effect".into(),
-            name: "高动态镜头放大(110%)与动感转场".into(),
-            start_sec: 2.8,
-            end_sec: 3.5,
-            color: "bg-amber-600 text-white".into(),
-            detail: Some("打破视觉疲劳，衔接正文干货".into()),
-        },
-        GeneratedTrackItem {
-            id: "5".into(),
-            track_type: "video".into(),
-            name: format!("02_{}硬核干货拆解与逻辑论证", role_short),
-            start_sec: 3.5,
-            end_sec: 28.0,
-            color: "bg-blue-700 text-white".into(),
-            detail: Some("紧凑剪辑，多机位/B-roll画面覆盖".into()),
-        },
-        GeneratedTrackItem {
-            id: "6".into(),
-            track_type: "ai_gen".into(),
-            name: format!("AI视觉对比插屏: {}核心论据占位", topic),
-            start_sec: 12.0,
-            end_sec: 15.5,
-            color: "bg-fuchsia-600 text-white".into(),
-            detail: Some("增强专业公信力与视觉冲击力".into()),
-        },
-    ];
+    // 优先采用从 Whisper 与 smart_storyteller 动态计算出的真实多轨分镜
+    let mut track_items: Vec<GeneratedTrackItem> = analysis
+        .as_ref()
+        .and_then(|a| a["dynamic_tracks"].as_array())
+        .and_then(|arr| serde_json::from_value(serde_json::Value::Array(arr.clone())).ok())
+        .filter(|v: &Vec<GeneratedTrackItem>| !v.is_empty())
+        .unwrap_or_else(|| vec![
+            GeneratedTrackItem {
+                id: "1".into(),
+                track_type: "video".into(),
+                name: format!("01_{}开篇抓人视觉切片({})", role_short, file_stem),
+                start_sec: 0.0,
+                end_sec: 3.5,
+                color: "bg-blue-600 text-white".into(),
+                detail: Some("黄金前3秒核心视觉特写，剔除所有气口".into()),
+            },
+            GeneratedTrackItem {
+                id: "2".into(),
+                track_type: "subtitle".into(),
+                name: format!("【{}】{}: 底层真相", role_short, topic),
+                start_sec: 0.3,
+                end_sec: 3.5,
+                color: "bg-cyan-500 text-black".into(),
+                detail: Some("居中特大加粗高对比度花字".into()),
+            },
+            GeneratedTrackItem {
+                id: "3".into(),
+                track_type: "audio".into(),
+                name: "动感重音效_Whoosh+赛道专属BGM".into(),
+                start_sec: 0.0,
+                end_sec: 30.0,
+                color: "bg-emerald-600 text-white".into(),
+                detail: Some("智能音量侧链闪避(-18dB)".into()),
+            },
+            GeneratedTrackItem {
+                id: "4".into(),
+                track_type: "effect".into(),
+                name: "高动态镜头放大(110%)与动感转场".into(),
+                start_sec: 2.8,
+                end_sec: 3.5,
+                color: "bg-amber-600 text-white".into(),
+                detail: Some("打破视觉疲劳，衔接正文干货".into()),
+            },
+            GeneratedTrackItem {
+                id: "5".into(),
+                track_type: "video".into(),
+                name: format!("02_{}硬核干货拆解与逻辑论证", role_short),
+                start_sec: 3.5,
+                end_sec: 28.0,
+                color: "bg-blue-700 text-white".into(),
+                detail: Some("紧凑剪辑，多机位/B-roll画面覆盖".into()),
+            },
+            GeneratedTrackItem {
+                id: "6".into(),
+                track_type: "ai_gen".into(),
+                name: format!("AI视觉对比插屏: {}核心论据占位", topic),
+                start_sec: 12.0,
+                end_sec: 15.5,
+                color: "bg-fuchsia-600 text-white".into(),
+                detail: Some("增强专业公信力与视觉冲击力".into()),
+            },
+        ]);
+
+    // 若大模型推导出了更精准的 Hook 标题，动态更新至第 2 轨花字
+    if let Some(sub_track) = track_items.iter_mut().find(|t| t.track_type == "subtitle" && t.id == "2") {
+        sub_track.name = hook_title.clone();
+    }
+
+    let has_speech = analysis.as_ref().and_then(|a| a["has_speech"].as_bool()).unwrap_or(false);
 
     Json(json!({
         "success": true,
@@ -194,7 +255,8 @@ pub async fn generate_director_draft(Json(req): Json<DirectorDraftReq>) -> impl 
         "track_count": track_items.len(),
         "track_items": track_items.clone(),
         "tracks": track_items,
-        "message": "原生 AGY 旗舰大模型已完成剧本推导与分镜解析",
+        "has_speech": has_speech,
+        "message": if has_speech { "原生 AGY 旗舰大模型已结合真实台词完成分镜推导" } else { "原生 AGY 旗舰大模型已完成剧本推导与分镜解析" },
         "summary": draft_summary
     }))
 }

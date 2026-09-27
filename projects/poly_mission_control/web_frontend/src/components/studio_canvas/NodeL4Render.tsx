@@ -10,7 +10,7 @@ export const NodeL4Render: FunctionalComponent<Props> = ({ data }) => {
   const isRendering = data.status === 'rendering';
 
   return (
-    <div className={`bg-[#0f172a]/95 border-2 ${data.isActiveFocus ? 'border-rose-400 ring-4 ring-rose-500/40 shadow-2xl shadow-rose-950/60 scale-[1.02]' : 'border-rose-500/50 shadow-xl shadow-rose-950/40'} rounded-xl p-4 w-72 text-gray-200 transition-all duration-300`}>
+    <div className={`relative bg-[#0f172a]/95 border-2 ${data.isActiveFocus ? 'border-rose-400 ring-4 ring-rose-500/40 shadow-2xl shadow-rose-950/60 scale-[1.02]' : 'border-rose-500/50 shadow-xl shadow-rose-950/40'} rounded-xl p-4 w-72 text-gray-200 transition-all duration-300`}>
       <Handle type="target" position={Position.Left} className="!bg-rose-400 !w-3 !h-3" />
 
       <div className="flex items-center justify-between pb-2 mb-3 border-b border-gray-800 cursor-grab active:cursor-grabbing select-none">

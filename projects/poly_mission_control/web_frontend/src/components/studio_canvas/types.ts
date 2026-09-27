@@ -63,6 +63,7 @@ export interface NodeL1Data {
 
 export interface NodeL2Data {
   ratio: AspectRatio;
+  cleanFile?: string;
   sectorId: string;
   directorId: string;
   subOptionId: string;
@@ -85,6 +86,8 @@ export interface NodeL3Data {
   isActiveFocus?: boolean;
   onOpenDrawer?: () => void;
   onProceedToL4?: () => void;
+  onExportJianying?: () => Promise<void>;
+  isExportingJianying?: boolean;
   [key: string]: any;
 }
 

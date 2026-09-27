@@ -38,7 +38,25 @@ triggers:
 - **X (推特)**: 颠覆性观点与硬核数据开局，强信息密度，评论区观点博弈 | 忌纯营销机器人话术与低质外链诱导，避免冗长客套开场
 - **通用**: 多端全网分发兼容，兼顾9:16竖屏与16:9居中安全区 | 剔除单一平台专属黑话与导流语，恪守通用合规
 
-## 三、 核心后端 API 规范
+## 三、 广播级 6 轨标准排布与分层空间坐标
+为彻底杜绝画面遮挡与单一画面单调问题，自研草稿引擎强制采用三层竖屏（1080x1920）立体视差布局：
+1. **视频主轨** (`track="视频主轨"`): 粗剪合并净成片 (Clean Master)，全画幅 1080x1920 居中铺底。
+2. **画中画插屏轨** (`track="画中画插屏轨"`): 8 组高质感 Glassmorphism B-Roll 实体卡片或空镜，强制设定 `scale_x=0.92, scale_y=0.92, transform_y=0.48`，位于视觉黄金上半区。
+3. **顶栏标牌轨** (`track="顶栏标牌轨"`): 全片常驻三段式主题标牌，强制设定 `transform_y=0.76`。
+4. **黄金前3秒钩子轨** (`track="黄金前3秒钩子轨"`): 0.0s~3.5s 金红高饱和悬念标题，快速抓住注意力。
+5. **动态花字轨** (`track="动态花字轨"`): Whisper 底栏安全区字幕，强制设定 `transform_y=-0.72`，严禁使用默认 `0.0` 遮挡人脸。
+6. **背景音乐轨** (`track="背景音乐轨"`): 对应赛道情绪 BGM，锁定音量 0.35 闪避人声。
+
+## 四、 CapCut 3.0+ Mac 桌面端草稿协议与沙盒安全防伪规范
+- **真机指纹与平台防伪注入**：
+  CapCut 3.0 Mac 原生动态库 `libVECreator.dylib` (`DraftLoadVerifier`) 严格校验平台与硬件参数。草稿必须注入：
+  `app_source: "cc"`, `app_id: 359289`, `version: 360000`, `new_version: "93.0.0"`, 并绑定本机物理硬件指纹（`device_id`, `hard_disk_id`, `mac_address`）。`root_meta_info.json`、`draft_meta_info.json` 与 `draft_info.json` 的 `draft_id` 必须严格一致，否则触发“草稿来自非常规路径，暂不支持使用”。
+- **macOS App 沙盒隔离与 APFS 零拷贝直连**：
+  CapCut 运行于 `com.lemon.lvoverseas` 沙盒，直接访问外部目录报 EPERM 权限错误。严禁草稿中残留 `##_draftpath_placeholder_...##`。所有音频、视频、图片资产统一使用 `os.link`（APFS 零拷贝硬链接）直连镜像入草稿工程 `Resources/` 目录。
+- **pyJianYingDraft 多同类轨安全规约**：
+  存在多个视频轨或多个文本轨时，调用 `script.add_segment` 必须显式传递 `track="对应轨道名"`，禁止隐式添加。
+
+## 五、 核心后端 API 规范
 - **分镜推导接口**: `POST http://127.0.0.1:8999/api/video/director-draft`
 - **请求参数**:
   ```json
@@ -50,4 +68,4 @@ triggers:
     "clean_file": "/Users/hi/niuma/video_workspace/library/sample.mp4"
   }
   ```
-- **核心逻辑**: Rust 后端优先采用 `custom_prompt`，动态计算平台特性，输出 6 轨定制分镜（视频切片、大花字字幕、音效BGM、动态转场、干货拆解、AI视觉插屏）。
+- **核心逻辑**: Rust 后端优先采用 `custom_prompt`，动态计算平台特性，推导全套 6 轨参数，调用底层 `jianying_draft_injector.py` 直通剪映草稿工程。

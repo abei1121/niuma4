@@ -83,7 +83,7 @@ export const NodeL2AgyDirector: FunctionalComponent<Props> = ({ data }) => {
 
   return (
     <div
-      className={`bg-[#0f172a]/95 border-2 ${
+      className={`relative bg-[#0f172a]/95 border-2 ${
         data.isActiveFocus
           ? 'border-amber-400 ring-4 ring-amber-500/40 shadow-2xl shadow-amber-900/60 scale-[1.02]'
           : 'border-amber-500/50 shadow-xl shadow-amber-950/40'
@@ -111,8 +111,8 @@ export const NodeL2AgyDirector: FunctionalComponent<Props> = ({ data }) => {
       <div className="space-y-2.5 text-xs">
         <div className="p-2 rounded bg-gray-900/80 border border-gray-800/80 flex items-center justify-between">
           <span className="text-gray-400 text-[11px]">上游粗洗素材:</span>
-          <span className="font-mono text-[11px] text-amber-300 truncate max-w-[180px]">
-            {data.cleanFile ? data.cleanFile.split('/').pop() : hasSourceSegments ? '精剪片段已就绪' : '未就绪 (可先定导演)'}
+          <span className="font-mono text-[11px] text-amber-300 truncate max-w-[180px] font-bold">
+            {data.cleanFile ? `${data.cleanFile.split('/').pop()} (已就绪)` : hasSourceSegments ? '精剪片段已就绪' : '未就绪 (可先定导演)'}
           </span>
         </div>
 

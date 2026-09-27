@@ -56,7 +56,8 @@ const StudioCanvasComponent: FunctionalComponent = () => {
       isL1ToL2Connected: isL1ToL2Connected || keepSegments.length > 0 || Boolean(cleanFile),
       keepCount: keepSegments.length,
       cleanDurationSec: washStats?.clean_duration_sec || 0,
-      isL2ToL3Connected: isL2ToL3Connected || (draftReady && trackItems.length > 0),
+      cleanFile: cleanFile || '',
+      isL2ToL3Connected: isL2ToL3Connected || draftReady,
       trackCount: trackItems.length,
       isL3ToL4Connected,
     });
@@ -91,6 +92,7 @@ const StudioCanvasComponent: FunctionalComponent = () => {
         if (res.keep_segments) setKeepSegments(res.keep_segments);
         if (res.cut_segments) setCutSegments(res.cut_segments);
         setWashStatus('completed');
+        setIsL1ToL2Connected(true);
       } else {
         setWashStatus('idle');
         alert(`粗洗失败: ${res.error || '转码异常'}`);
@@ -109,16 +111,16 @@ const StudioCanvasComponent: FunctionalComponent = () => {
   }, []);
 
   const handleProceedToL2 = useCallback((segments: KeepSegmentItem[]) => {
-    if (!segments || !segments.length) {
-      alert('当前暂无粗剪切片，请先在 L1 执行粗剪');
+    if ((!segments || !segments.length) && !cleanFile) {
+      alert('当前暂无粗剪切片或成片母带，请先在 L1 执行粗剪');
       return;
     }
     setIsL1ToL2Connected(true);
     setL2ActiveFocus(true);
     setL3ActiveFocus(false);
     setL4ActiveFocus(false);
-    rfInstance?.setCenter(860 + 175, 150 + 200, { zoom: 0.95, duration: 650 });
-  }, [rfInstance]);
+    rfInstance?.setCenter(1080 + 200, 100 + 250, { zoom: 0.95, duration: 650 });
+  }, [rfInstance, cleanFile]);
 
   const handleProceedToL3 = useCallback((tracks: TrackItem[]) => {
     if (!tracks || !tracks.length) {
@@ -130,7 +132,7 @@ const StudioCanvasComponent: FunctionalComponent = () => {
     setL2ActiveFocus(false);
     setL3ActiveFocus(true);
     setL4ActiveFocus(false);
-    rfInstance?.setCenter(1250 + 160, 150 + 200, { zoom: 0.95, duration: 650 });
+    rfInstance?.setCenter(1640 + 180, 100 + 250, { zoom: 0.95, duration: 650 });
   }, [rfInstance]);
 
   const handleProceedToL4 = useCallback(() => {
@@ -138,17 +140,19 @@ const StudioCanvasComponent: FunctionalComponent = () => {
     setL2ActiveFocus(false);
     setL3ActiveFocus(false);
     setL4ActiveFocus(true);
-    rfInstance?.setCenter(1640 + 145, 150 + 200, { zoom: 0.95, duration: 650 });
+    rfInstance?.setCenter(2160 + 160, 100 + 250, { zoom: 0.95, duration: 650 });
   }, [rfInstance]);
 
   const { nodes, onNodesChange, resetNodesLayout } = useStudioNodes({
-    ratio, files, selectedFile, cleanFile, washStatus, washStats, keepSegments, cutSegments, silenceDb, minSilenceDurationSec,
+    ratio, files, selectedFile, cleanFile, projectName, washStatus, washStats, keepSegments, cutSegments, silenceDb, minSilenceDurationSec,
     directorId, platformId, sectorId, setSectorId, subOptionId, setSubOptionId, directorPrompt, setDirectorPrompt, topic, setTopic,
     draftReady, renderProgress, isRendering, trackItems,
     setRatio, setFiles, setSelectedFile, setSilenceDb, setMinSilenceDurationSec,
     setDirectorId, setPlatformId, setDraftReady, setIsRendering, setRenderProgress,
     setMediaPickerOpen, setDrawerOpen, setTrackItems, handleRotateFile, handleStartWash,
     handleApplyCutToL3, handleProceedToL2, handleProceedToL3, handleProceedToL4,
+    setIsL1ToL2Connected, setIsL2ToL3Connected, setIsL3ToL4Connected,
+    setL2ActiveFocus, setL3ActiveFocus, setL4ActiveFocus,
     l2ActiveFocus, l3ActiveFocus, l4ActiveFocus,
     onOpenPreview: (url, title) => setPreviewModal({ isOpen: true, url, title }),
   });

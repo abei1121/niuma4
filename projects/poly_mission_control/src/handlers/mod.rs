@@ -16,3 +16,4 @@ pub mod video_orientation;
 pub mod video_wash;
 pub mod director_engine;
 pub mod canvas_bridge;
+pub mod jianying_export;

@@ -66,3 +66,14 @@
 - **小文件解耦契约**：前端 React/Preact 组件与 Hook 严格拆分为单一职责小文件（如 `studioNodeBuilders.ts`、`studioCanvasActions.ts`、`L1SegmentsInspector.tsx`、`L2SectorSelector.tsx`、`L2PlatformCard.tsx`），保证所有代码文件严格小于 250 行。
 - **禁止使用表情符号**：严禁在前端代码、系统输出、弹窗提示及与用户沟通中包含任何 Emoji。
 
+## 13. CapCut / 剪映 3.0+ Mac 桌面端草稿协议与沙盒安全防伪铁律 (CapCut 3.0 Mac Draft Protocol & Sandbox Law)
+- **草稿载入防伪绕过**：CapCut 3.0 Mac `libVECreator.dylib` (`DraftLoadVerifier`) 严格校验 `app_source == "cc"`, `app_id == 359289`, `version == 360000`, `new_version == "93.0.0"`，绑定真机硬件指纹（`device_id`, `hard_disk_id`, `mac_address`），且 `root_meta_info.json`、`draft_meta_info.json` 与 `draft_info.json` 的 `draft_id` 必须三位一体严格一致，杜绝“此草稿来自非常规路径，暂不支持使用”。
+- **macOS App 沙盒权限与 APFS 零拷贝硬链接**：CapCut 运行于 `com.lemon.lvoverseas` 沙盒，外部路径无权直接读取。禁止在草稿中残留 `##_draftpath_placeholder_...##`。必须采用 APFS 零拷贝硬链接（`os.link`）将视频、音频与视觉卡片等素材镜像直连至 `draft_dir/Resources/`，毫秒级瞬时同步且不占额外磁盘，杜绝“暂无访问权限”报错。
+- **广播级 6 轨标准排布与分层空间坐标**：
+  1. `视频主轨`：粗剪合并净成片 (Clean Master)，全画幅铺底。
+  2. `画中画插屏轨`：8 组高质感 Glassmorphism B-Roll 实体卡片/空镜，强制设定 `scale=0.92, transform_y=0.48`，位于视觉黄金上半区。
+  3. `顶栏标牌轨`：常驻三段式主题标牌，强制设定 `transform_y=0.76`。
+  4. `黄金前3秒钩子轨`：0.0s~3.5s 金红高饱和悬念标题，提升前 3 秒留存率。
+  5. `动态花字轨`：Whisper 转写字幕，强制设定 `transform_y=-0.72`，严禁使用默认 `0.0` 遮挡人脸。
+  6. `背景音乐轨`：赛道匹配 BGM，锁定音量 0.35 闪避人声。
+- **pyJianYingDraft 多同类轨安全规约**：当草稿中存在多个同类型轨道（多视频轨或多文本轨）时，必须显式传递 `track="对应轨道名"`，严禁隐式调用引发 NameError。

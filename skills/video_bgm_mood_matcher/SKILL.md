@@ -16,6 +16,11 @@ description: 情绪音效与 BGM 智能卡点匹配器。根据赛道分类与�
 3. **音效落槌点（SFX Markers）**：
    - 自动在前 3 秒收口点打上轻转场 Whoosh 标记。
    - 自动在各重要切片落槌点打上低频顿挫 Impact 标记。
+4. **BGM 自动闪避规范（Audio Ducking）**：
+   - 口播短视频背景音乐音量严格控制在 0.30 ~ 0.35 区间，绝不可遮掩主轨人声音量。
+5. **剪映草稿接入规约**：
+   - 统一使用 APFS 硬链接接入 `draft_dir/Resources/`。
+   - 调用 pyJianYingDraft 时显式指定 `track="背景音乐轨"`。
 
 ## 脚本入口
 - 脚本位置：`/Users/hi/niuma/video_workspace/scripts/bgm_mood_matcher.py`

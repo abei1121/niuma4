@@ -44,6 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/video/download-url", post(handlers::video_orientation::download_remote_video))
         .route("/api/video/rough-wash", post(handlers::video_wash::execute_rough_wash))
         .route("/api/video/director-draft", post(handlers::director_engine::generate_director_draft))
+        .route("/api/video/export-jianying", post(handlers::jianying_export::export_jianying_draft_handler))
         .route("/api/canvas/auto-workflow", post(handlers::canvas_bridge::run_auto_workflow))
         // Agent Brain & Models & Gemini Accounts Matrix
         .route("/api/agent/status", get(handlers::agent_brain::get_agent_status))

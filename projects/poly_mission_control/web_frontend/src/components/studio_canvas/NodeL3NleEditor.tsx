@@ -13,14 +13,15 @@ export const NodeL3NleEditor: FunctionalComponent<Props> = ({ data }) => {
   const effectCount = items.filter((i) => i.trackType === 'effect').length;
   const aiGenCount = items.filter((i) => i.trackType === 'ai_gen').length;
   const hasTracks = items.length > 0;
+  const isExporting = Boolean(data.isExportingJianying);
 
   return (
     <div
-      className={`bg-[#0f172a]/95 border-2 ${
+      className={`relative bg-[#0f172a]/95 border-2 ${
         data.isActiveFocus
           ? 'border-purple-400 ring-4 ring-purple-500/40 shadow-2xl shadow-purple-950/60 scale-[1.02]'
           : 'border-purple-500/50 shadow-xl shadow-purple-950/40'
-      } rounded-xl p-4 w-80 text-gray-200 transition-all duration-300`}
+      } rounded-xl p-4 w-84 text-gray-200 transition-all duration-300`}
     >
       <Handle type="target" position={Position.Left} className="!bg-purple-400 !w-3 !h-3" />
 
@@ -58,7 +59,11 @@ export const NodeL3NleEditor: FunctionalComponent<Props> = ({ data }) => {
         </div>
 
         {/* 迷你轨道时间线示意 */}
-        <div className="bg-black/60 border border-gray-800 rounded p-2 space-y-1.5 nodrag">
+        <div
+          onClick={() => data.onOpenDrawer?.()}
+          className="bg-black/60 border border-gray-800 hover:border-purple-500/50 rounded p-2 space-y-1.5 nodrag cursor-pointer transition"
+          title="点击展开全屏多轨时间线抽屉"
+        >
           <div className="flex items-center space-x-1">
             <span className="w-8 text-[9px] text-gray-500 font-mono">画面</span>
             <div className="flex-1 h-2 bg-blue-600/40 rounded flex space-x-0.5 px-0.5">
@@ -88,14 +93,23 @@ export const NodeL3NleEditor: FunctionalComponent<Props> = ({ data }) => {
           </div>
         </div>
 
-        {/* 状态与操作按钮 */}
+        {/* 核心操作按钮组 */}
         <div className="space-y-2 pt-1 nodrag">
           <button
             type="button"
-            onClick={() => data.onOpenDrawer?.()}
-            className="nodrag cursor-pointer select-none w-full py-2 px-3 bg-purple-900/60 hover:bg-purple-800/80 border border-purple-500/40 text-purple-200 rounded-lg font-bold text-center text-xs transition flex items-center justify-center space-x-1.5 active:scale-[0.98]"
+            onClick={() => data.onExportJianying?.()}
+            disabled={isExporting}
+            className="nodrag cursor-pointer select-none w-full py-2.5 px-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 disabled:from-gray-800 disabled:to-gray-800 text-white rounded-lg font-bold text-center text-xs transition shadow-lg shadow-purple-950 flex items-center justify-center space-x-1.5 active:scale-[0.98]"
           >
-            <span>展开剪映式多轨时间线 ({items.length} 轨精修)</span>
+            <span>{isExporting ? '正在生成草稿并调起剪映...' : '生成剪映草稿并调起客户端'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => data.onOpenDrawer?.()}
+            className="nodrag cursor-pointer select-none w-full py-1.5 px-3 bg-gray-900/90 hover:bg-gray-800 border border-gray-700 text-gray-300 hover:text-purple-200 rounded-lg text-xs font-medium text-center transition flex items-center justify-center space-x-1"
+          >
+            <span>展开网页多轨时间线 ({items.length} 轨微调)</span>
           </button>
 
           {hasTracks ? (

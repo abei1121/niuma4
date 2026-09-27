@@ -2,13 +2,14 @@ import { useState, useCallback, useEffect } from 'preact/hooks';
 import { useNodesState } from '@xyflow/react';
 import { AspectRatio, TrackItem, KeepSegmentItem, CutSegmentItem, NodeL3Data, NodeL4Data } from './types';
 import { buildNodeL0Data, buildNodeL1Data, buildNodeL2Data } from './studioNodeBuilders';
-import { executeRenderTask } from './studioCanvasActions';
+import { executeRenderTask, executeDirectorDraft, executeJianyingExport } from './studioCanvasActions';
 
 export interface UseStudioNodesProps {
   ratio: AspectRatio;
   files: string[];
   selectedFile: string;
   cleanFile: string;
+  projectName?: string;
   washStatus: 'idle' | 'washing' | 'completed';
   washStats: any;
   keepSegments: KeepSegmentItem[];
@@ -48,6 +49,12 @@ export interface UseStudioNodesProps {
   handleProceedToL2: (segments: KeepSegmentItem[]) => void;
   handleProceedToL3: (tracks: TrackItem[]) => void;
   handleProceedToL4: () => void;
+  setIsL1ToL2Connected?: (connected: boolean) => void;
+  setIsL2ToL3Connected?: (connected: boolean) => void;
+  setIsL3ToL4Connected?: (connected: boolean) => void;
+  setL2ActiveFocus?: (focused: boolean) => void;
+  setL3ActiveFocus?: (focused: boolean) => void;
+  setL4ActiveFocus?: (focused: boolean) => void;
   l2ActiveFocus: boolean;
   l3ActiveFocus: boolean;
   l4ActiveFocus: boolean;
@@ -60,6 +67,9 @@ export function useStudioNodes(props: UseStudioNodesProps) {
   const [localDirectorPrompt, setLocalDirectorPrompt] = useState('爆款自媒体玄学名人命盘视频导演');
   const [localTopic, setLocalTopic] = useState('');
   const [outputFile, setOutputFile] = useState<string>('');
+  const [hookTitle, setHookTitle] = useState('');
+  const [draftSummary, setDraftSummary] = useState('');
+  const [isExportingJianying, setIsExportingJianying] = useState(false);
 
   const sectorId = props.sectorId ?? localSectorId;
   const subOptionId = props.subOptionId ?? localSubOptionId;
@@ -75,6 +85,7 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     ratio: props.ratio,
     files: props.files,
     selectedFile: props.selectedFile,
+    isWashed: Boolean(props.cleanFile || props.washStatus === 'completed' || (props.keepSegments && props.keepSegments.length > 0)),
     onOpenMediaPicker: () => props.setMediaPickerOpen(true),
     handleStartWash: props.handleStartWash,
     handleRotateFile: props.handleRotateFile,
@@ -103,44 +114,44 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     onOpenPreview: props.onOpenPreview,
   });
 
-  const handleGenerateDraft = useCallback(async () => {
-    try {
-      const res = await fetch('/api/video/director-draft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          director_id: sectorId,
-          platform_id: props.platformId,
-          topic: topic || directorPrompt,
-          custom_prompt: directorPrompt,
-          clean_file: props.cleanFile || props.selectedFile || '',
-        }),
-      });
-      const data = await res.json();
-      const rawTracks = data.tracks || data.track_items || [];
-      if (data.success && rawTracks.length > 0) {
-        const normalizedTracks = rawTracks.map((t: any, idx: number) => ({
-          id: t.id ? String(t.id) : `track-${idx}`,
-          trackType: t.trackType || t.track_type || 'video',
-          name: t.name || `片段 #${idx + 1}`,
-          startSec: typeof t.startSec === 'number' ? t.startSec : (t.start_sec || 0),
-          endSec: typeof t.endSec === 'number' ? t.endSec : (t.end_sec || 5.0),
-          color: t.color || 'bg-blue-600 border-blue-400',
-          detail: t.detail || '',
-        }));
-        props.setTrackItems(normalizedTracks);
-        props.setDraftReady(true);
-        alert(`分镜草稿生成完毕，已生成 ${normalizedTracks.length} 个轨道元素`);
-      } else {
-        alert(`生成草稿失败: ${data.error || '未知异常'}`);
-      }
-    } catch (e) {
-      alert(`生成草稿异常: ${e}`);
-    }
+  const handleGenerateDraft = useCallback(() => {
+    return executeDirectorDraft({
+      sectorId,
+      platformId: props.platformId,
+      topic,
+      directorPrompt,
+      cleanFile: props.cleanFile,
+      selectedFile: props.selectedFile,
+      setHookTitle,
+      setDraftSummary,
+      setTrackItems: props.setTrackItems,
+      setDraftReady: props.setDraftReady,
+      setIsL2ToL3Connected: props.setIsL2ToL3Connected,
+      setL2ActiveFocus: props.setL2ActiveFocus,
+      setL3ActiveFocus: props.setL3ActiveFocus,
+      handleProceedToL3: props.handleProceedToL3,
+    });
   }, [sectorId, props.platformId, topic, directorPrompt, props.cleanFile, props.selectedFile]);
+
+  const handleExportJianying = useCallback(() => {
+    return executeJianyingExport({
+      cleanFile: props.cleanFile,
+      selectedFile: props.selectedFile,
+      files: props.files,
+      projectName: props.projectName,
+      sectorId,
+      hookTitle,
+      topic,
+      directorRole: directorPrompt || topic,
+      platformId: props.platformId,
+      setIsExportingJianying,
+    });
+  }, [props.cleanFile, props.selectedFile, props.files, props.projectName, sectorId, hookTitle, topic, directorPrompt, props.platformId]);
+
 
   const nodeL2Data = buildNodeL2Data({
     ratio: props.ratio,
+    cleanFile: props.cleanFile,
     sectorId,
     directorId: props.directorId,
     subOptionId,
@@ -151,6 +162,8 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     generatedTracks: props.trackItems,
     sourceSegments: props.keepSegments,
     isActiveFocus: props.l2ActiveFocus,
+    hookTitle,
+    draftSummary,
     onUpdate: (updates: any) => {
       if (updates.sectorId) updateSectorId(updates.sectorId);
       if (updates.directorId) props.setDirectorId(updates.directorId);
@@ -168,6 +181,8 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     isActiveFocus: props.l3ActiveFocus,
     onOpenDrawer: () => props.setDrawerOpen(true),
     onProceedToL4: props.handleProceedToL4,
+    onExportJianying: handleExportJianying,
+    isExportingJianying,
   };
 
   const nodeL4Data: NodeL4Data = {
@@ -186,36 +201,19 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     },
   };
 
-  const initialNodes = [
-    { id: 'node-l0', type: 'nodeL0', position: { x: 50, y: 150 }, data: nodeL0Data },
-    { id: 'node-l1', type: 'nodeL1', position: { x: 450, y: 150 }, data: nodeL1Data },
-    { id: 'node-l2', type: 'nodeL2', position: { x: 860, y: 150 }, data: nodeL2Data },
-    { id: 'node-l3', type: 'nodeL3', position: { x: 1250, y: 150 }, data: nodeL3Data },
-    { id: 'node-l4', type: 'nodeL4', position: { x: 1640, y: 150 }, data: nodeL4Data },
+  const initialNodes: any[] = [
+    { id: 'node-l0', type: 'nodeL0', position: { x: 40, y: 100 }, data: nodeL0Data },
+    { id: 'node-l1', type: 'nodeL1', position: { x: 540, y: 100 }, data: nodeL1Data },
+    { id: 'node-l2', type: 'nodeL2', position: { x: 1080, y: 100 }, data: nodeL2Data },
+    { id: 'node-l3', type: 'nodeL3', position: { x: 1640, y: 100 }, data: nodeL3Data },
+    { id: 'node-l4', type: 'nodeL4', position: { x: 2160, y: 100 }, data: nodeL4Data },
   ];
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
-
-  const resetNodesLayout = useCallback(() => {
-    const DEFAULT_POSITIONS: Record<string, { x: number; y: number }> = {
-      'node-l0': { x: 50, y: 150 },
-      'node-l1': { x: 450, y: 150 },
-      'node-l2': { x: 860, y: 150 },
-      'node-l3': { x: 1250, y: 150 },
-      'node-l4': { x: 1640, y: 150 },
-    };
-    setNodes((nds) =>
-      nds.map((node) => ({
-        ...node,
-        position: DEFAULT_POSITIONS[node.id] || node.position,
-      }))
-    );
-    setOutputFile('');
-  }, [setNodes]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 
   useEffect(() => {
-    setNodes((currentNodes) =>
-      currentNodes.map((n) => {
+    setNodes((nds) =>
+      nds.map((n) => {
         if (n.id === 'node-l0') return { ...n, data: nodeL0Data };
         if (n.id === 'node-l1') return { ...n, data: nodeL1Data };
         if (n.id === 'node-l2') return { ...n, data: nodeL2Data };
@@ -229,13 +227,12 @@ export function useStudioNodes(props: UseStudioNodesProps) {
     props.washStats, props.keepSegments, props.cutSegments, props.silenceDb,
     props.minSilenceDurationSec, sectorId, subOptionId, directorPrompt, props.platformId,
     topic, props.draftReady, props.trackItems, props.l2ActiveFocus, props.l3ActiveFocus,
-    props.l4ActiveFocus, props.isRendering, props.renderProgress, props.onOpenPreview,
-    outputFile
+    props.l4ActiveFocus, props.isRendering, props.renderProgress, outputFile, hookTitle, draftSummary, isExportingJianying,
   ]);
 
-  return {
-    nodes,
-    onNodesChange,
-    resetNodesLayout,
-  };
+  const resetNodesLayout = useCallback(() => {
+    setNodes(initialNodes);
+  }, [setNodes]);
+
+  return { nodes, onNodesChange, resetNodesLayout };
 }

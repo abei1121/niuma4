@@ -4,6 +4,7 @@ export function buildNodeL0Data(params: {
   ratio: AspectRatio;
   files: string[];
   selectedFile: string;
+  isWashed?: boolean;
   onOpenMediaPicker: () => void;
   handleStartWash: () => void;
   handleRotateFile: (filePath: any, degrees?: number) => void;
@@ -16,6 +17,7 @@ export function buildNodeL0Data(params: {
     ratio: params.ratio,
     files: params.files,
     selectedFile: params.selectedFile,
+    isWashed: params.isWashed,
     onAddFiles: params.onOpenMediaPicker,
     onOpenMediaPicker: params.onOpenMediaPicker,
     onGenerateL1: params.handleStartWash,
@@ -88,6 +90,7 @@ export function buildNodeL1Data(params: {
 
 export function buildNodeL2Data(params: {
   ratio: AspectRatio;
+  cleanFile?: string;
   sectorId: string;
   directorId: string;
   subOptionId: string;
@@ -98,12 +101,15 @@ export function buildNodeL2Data(params: {
   generatedTracks: TrackItem[];
   sourceSegments: KeepSegmentItem[];
   isActiveFocus: boolean;
+  hookTitle?: string;
+  draftSummary?: string;
   onUpdate: (updates: any) => void;
   onGenerateDraft: () => Promise<void>;
   onProceedToL3: (tracks: TrackItem[]) => void;
 }): NodeL2Data {
   return {
     ratio: params.ratio,
+    cleanFile: params.cleanFile,
     sectorId: params.sectorId,
     directorId: params.directorId,
     subOptionId: params.subOptionId,
@@ -114,6 +120,8 @@ export function buildNodeL2Data(params: {
     generatedTracks: params.generatedTracks,
     sourceSegments: params.sourceSegments,
     isActiveFocus: params.isActiveFocus,
+    hookTitle: params.hookTitle,
+    draftSummary: params.draftSummary,
     onUpdate: params.onUpdate,
     onGenerateDraft: params.onGenerateDraft,
     onProceedToL3: params.onProceedToL3,

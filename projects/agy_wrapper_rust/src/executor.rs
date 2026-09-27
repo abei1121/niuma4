@@ -47,13 +47,16 @@ pub fn run_with_account_rotation(cmd_args: &[String]) {
         let target_home = Path::new(BASE_ACCOUNTS_DIR).join(acc_name);
         let _ = fs::create_dir_all(&target_home);
 
-        // 自动保障 macOS 钥匙串软链接，彻底杜绝系统弹窗“确定要还原钥匙串吗”
+        // 创建独立空 Keychains 目录（禁止软链到真实 Keychain！）
+        // agy 优先从 Keychain 读 token，共享 Keychain 会导致所有账号读到同一个 token
         #[cfg(target_os = "macos")]
         {
             let lib_keychains = target_home.join("Library").join("Keychains");
+            if lib_keychains.is_symlink() {
+                let _ = fs::remove_file(&lib_keychains);
+            }
             if !lib_keychains.exists() {
-                let _ = fs::create_dir_all(target_home.join("Library"));
-                let _ = std::os::unix::fs::symlink("/Users/hi/Library/Keychains", &lib_keychains);
+                let _ = fs::create_dir_all(&lib_keychains);
             }
         }
 

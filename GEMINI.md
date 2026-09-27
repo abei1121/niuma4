@@ -93,3 +93,9 @@
     - `obsxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/obsxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
     - `rawxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/dapp/rawxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
 
+## 15. AGY 多账号矩阵与 macOS 钥匙串隔离铁律 (AGY Multi-Account Keychain Isolation Law)
+- **钥匙串物理隔离铁律**：严禁将任何账号沙盒（`~/.gemini_accounts/acc*/Library/Keychains`）软链接至宿主机 `/Users/hi/Library/Keychains`！Antigravity CLI 原生 Go 二进制的 `ChainedAuth` 优先从系统钥匙串读取 Token，软链接会导致所有账号不论如何切换都强制穿透读取宿主机的 acc1（`yabzaibot@gmail.com`），造成永久锁死 acc1。每个账号沙盒必须使用独立的空 Keychains 目录，强制回退读取沙盒专有的 `antigravity-oauth-token` 文件。
+- **自愈防穿透守卫**：`agy_wrapper_rust`（`executor.rs`、`login.rs`）与 `poly_mission_control`（`fs_ops.rs`）启动及初始化时必须显式检测软链接，若存在软链接立即强制拔除并重建成独立空目录。
+- **双通道切换与生效边界**：控制面板（8999）点击【设为主号】或探针执行 `--switch <idx>` 均原子修改 `status.json` 的 `active_index`。面板内置任务与新开终端会话即刻生效；已在运行中的交互式终端会话因进程内存固化，无法热重载，需在终端输入 `/exit` 退出后重新运行 `agy` 即可生效。
+
+

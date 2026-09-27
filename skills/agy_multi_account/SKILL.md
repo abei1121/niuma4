@@ -62,13 +62,25 @@ python3 /Users/hi/niuma/bin/gemini_oauth_flow exchange "4/0A..." acc2
 - 运行 `gemini_account_probe`，确认目标账号处于 `[正常就绪 (无冷却)]` 且 `[有凭据]`。
 - 确认 `/Users/hi/.gemini_accounts/<acc>/.gemini/antigravity-cli/antigravity-oauth-token` 存在且 `auth_method` 为 `consumer`。
 
-## 核心架构原理
+## 核心架构原理与铁律防坑准则
 1. **HOME 隔离沙盒**：`agy_wrapper` 通过覆盖 `HOME` 环境变量，将 agy 进程的配置目录切换到对应账号的独立沙盒目录，实现账号间完全隔离。
-2. **stderr 捕获识别**：实时捕获 agy 进程的 stderr，同时透传到终端；检测到 `429/resource_exhausted/quota` 关键词时触发轮换。
-3. **动态冷却时间戳**：解析错误中的 `resets in Xm` 时长，写入 `status.json` 的 `blocked_until` 字段，加 30 秒缓冲。
-4. **状态原子读写**：所有状态变更通过 `status.json` 原子持久化，下次启动自动加载恢复。
-5. **网络瞬断重试**：超时/502/503 类错误最多重试 3 次（间隔 3 秒），不触发账号轮换。
+2. **macOS 钥匙串（Keychain）物理隔离铁律（防穿透防死锁）**：
+   - **铁律警告**：严禁将任何账号沙盒的 `Library/Keychains` 软链接至宿主机 `/Users/hi/Library/Keychains`！
+   - **穿透劫持根因**：Antigravity CLI 原生 Go 二进制的 `ChainedAuth` 优先从 macOS Keychain（`keyringAuth`）提取凭据；若存在软链接，将导致所有账号不论如何切换都强制穿透读取宿主机已保存的 acc1（`yabzaibot@gmail.com`），造成永久锁死 acc1。
+   - **物理隔离规范**：每个账号必须保持各自独立的真实空目录 `~/.gemini_accounts/<acc>/Library/Keychains`，强迫 Antigravity 回退读取沙盒内的 `antigravity-oauth-token` 文件。`agy_wrapper` 在启动与登录时均内置防穿透逻辑：检测到软链接立即强制断开拔除并重建真实目录。
+3. **面板与命令行双通道切换及生效边界**：
+   - **控制面板（8999）**：“大模型矩阵轮换”页点击【设为主号】即时写入 `status.json` 的 `active_index`。
+   - **探针命令行**：执行 `/Users/hi/niuma/bin/gemini_account_probe --switch <idx>`。
+   - **生效边界铁律**：
+     - 面板内置的大模型推演功能（如 Agent 提示词执行、导演智能脚本推演）**立即实时生效**。
+     - 新开终端或新运行的 `agy` 进程**立即生效**。
+     - **已在运行中的交互式 `agy` 终端会话**：由于进程内存已经加载了启动时的 Token 和环境，**无法被外部进程热重载**，必须在该终端内输入 `/exit` 退出后重新执行 `agy` 即可生效。
+4. **stderr 捕获识别**：实时捕获 agy 进程的 stderr，同时透传到终端；检测到 `429/resource_exhausted/quota` 关键词时触发轮换。
+5. **动态冷却时间戳**：解析错误中的 `resets in Xm` 时长，写入 `status.json` 的 `blocked_until` 字段，加 30 秒缓冲。
+6. **状态原子读写**：所有状态变更通过 `status.json` 原子持久化，下次启动自动加载恢复。
+7. **网络瞬断重试**：超时/502/503 类错误最多重试 3 次（间隔 3 秒），不触发账号轮换。
 
 ## 深度原理索引
 - 源码参考: `/Users/hi/niuma/niuma1-main/projects/agy_wrapper_rust/`
+- 控制台后端: `/Users/hi/niuma/niuma1-main/projects/poly_mission_control/src/handlers/gemini_accounts/`
 - OAuth 换票脚本: `/Users/hi/niuma/niuma1-main/projects/gemini_account_probe/scripts/gemini_oauth_flow.py`

@@ -50,5 +50,9 @@
   {
     "role": "system",
     "content": "# 核心设定与行为准则 - 13. CapCut / 剪映 3.0+ Mac 桌面端草稿协议与沙盒安全防伪铁律 (CapCut 3.0 Mac Draft Protocol & Sandbox Law)\n- **草稿载入防伪绕过**：CapCut 3.0 Mac `libVECreator.dylib` (`DraftLoadVerifier`) 严格校验 `app_source == \"cc\"`, `app_id == 359289`, `version == 360000`, `new_version == \"93.0.0\"`，绑定真机硬件指纹（`device_id`, `hard_disk_id`, `mac_address`），且 `root_meta_info.json`、`draft_meta_info.json` 与 `draft_info.json` 的 `draft_id` 必须三位一体严格一致，杜绝\"此草稿来自非常规路径，暂不支持使用\"。\n- **macOS App 沙盒权限与 APFS 零拷贝硬链接**：CapCut 运行于 `com.lemon.lvoverseas` 沙盒，外部路径无权直接读取。禁止在草稿中残留 `##_draftpath_placeholder_...##`。必须采用 APFS 零拷贝硬链接（`os.link`）将视频、音频与视觉卡片等素材镜像直连至 `draft_dir/Resources/`，毫秒级瞬时同步且不占额外磁盘，杜绝\"暂无访问权限\"报错。\n- **广播级 6 轨标准排布与分层空间坐标**：1. 视频主轨（粗剪合并净成片 Clean Master，全画幅铺底）；2. 画中画插屏轨（8组高质感 Glassmorphism B-Roll 实体卡片/空镜，强制设定 scale=0.92, transform_y=0.48 位于视觉黄金上半区）；3. 顶栏标牌轨（常驻三段式主题标牌，强制设定 transform_y=0.76）；4. 黄金前3秒钩子轨（0.0s~3.5s 金红高饱和悬念标题）；5. 动态花字轨（Whisper 转写字幕，强制设定 transform_y=-0.72，严禁默认 0.0 遮挡人脸）；6. 背景音乐轨（赛道匹配 BGM，锁定音量 0.35 闪避人声）。\n- **pyJianYingDraft 多同类轨安全规约**：当草稿中存在多个同类型轨道时，必须显式传递 `track=\"对应轨道名\"`，严禁隐式调用引发 NameError。"
+  },
+  {
+    "role": "system",
+    "content": "# 核心设定与行为准则 - 14. AGY 多账号矩阵与 macOS 钥匙串隔离铁律 (AGY Multi-Account Keychain Isolation Law)\n- **钥匙串物理隔离铁律**：严禁将任何账号沙盒（`~/.gemini_accounts/acc*/Library/Keychains`）软链接至宿主机 `/Users/hi/Library/Keychains`！Antigravity CLI 原生 Go 二进制的 `ChainedAuth` 优先从系统钥匙串读取 Token，软链接会导致所有账号不论如何切换都强制穿透读取宿主机的 acc1（`yabzaibot@gmail.com`），造成永久锁死 acc1。每个账号沙盒必须使用独立的空 Keychains 目录，强制回退读取沙盒专有的 `antigravity-oauth-token` 文件。\n- **自愈防穿透守卫**：`agy_wrapper_rust`（`executor.rs`、`login.rs`）与 `poly_mission_control`（`fs_ops.rs`）启动及初始化时必须显式检测软链接，若存在软链接立即强制拔除并重建成独立空目录。\n- **双通道切换与生效边界**：控制面板（8999）点击【设为主号】或探针执行 `--switch <idx>` 均原子修改 `status.json` 的 `active_index`。面板内置任务与新开终端会话即刻生效；已在运行中的交互式终端会话因进程内存固化，无法热重载，需在终端输入 `/exit` 退出后重新运行 `agy` 即可生效。"
   }
 ]

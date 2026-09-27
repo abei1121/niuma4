@@ -81,5 +81,14 @@ pub fn setup_account_environment(acc_id: &str) -> Result<String, String> {
         }
     }
 
+    // Keychains isolation (prevent macOS Keychain token leakage)
+    let lib_dir = format!("{}/Library", target_dir);
+    let keychains_dir = format!("{}/Keychains", lib_dir);
+    let keychains_path = Path::new(&keychains_dir);
+    if keychains_path.is_symlink() {
+        let _ = fs::remove_file(keychains_path);
+    }
+    let _ = fs::create_dir_all(keychains_path);
+
     Ok(cli_dir)
 }

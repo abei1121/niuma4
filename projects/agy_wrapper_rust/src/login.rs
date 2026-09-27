@@ -44,6 +44,13 @@ pub fn handle_login_command(args: &[String]) -> anyhow::Result<bool> {
                 }
             }
 
+            // 隔离 Keychains 目录
+            let lib_keychains = target_home.join("Library").join("Keychains");
+            if lib_keychains.is_symlink() {
+                let _ = fs::remove_file(&lib_keychains);
+            }
+            let _ = fs::create_dir_all(&lib_keychains);
+
             println!("=======================================================");
             println!("  Adding/Logging in Account {} ({})", idx, acc_name);
             println!("=======================================================");

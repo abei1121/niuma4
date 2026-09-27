@@ -93,3 +93,4 @@
     - `obsxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/obsxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
     - `rawxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/dapp/rawxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
 
+

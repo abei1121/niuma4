@@ -33,12 +33,15 @@
 
 ### 2.3 物理隔离铁律
 - **严禁软链接**：严禁将任何账号沙盒的 `Library/Keychains` 软链接至宿主机 `/Users/hi/Library/Keychains`！
-- **独立空目录**：每个账号必须保持各自独立的真实空目录：
-  ```bash
-  /Users/hi/.gemini_accounts/<acc>/Library/Keychains
-  ```
-  通过提供空的钥匙串目录，使 `agy.real` 查询系统钥匙串时失败返回，从而**强制触发回退逻辑，读取沙盒专有的 `antigravity-oauth-token`**。
-- **自愈防穿透守卫**：
+- **物理隔离与静默钥匙串初始化（彻底消灭 macOS 弹窗）**：
+  - **历史遗留陷阱**：早期为了阻断宿主机 Keychain 泄露，将沙盒 `Library/Keychains` 置为空目录。但因为 macOS 系统的 `securityd` / `authd` 在空目录中完全找不到默认钥匙串，一旦任何工具（`agy.real`、Git、curl、浏览器）尝试读写钥匙串，macOS 就会在用户桌面强行弹出弹窗：**“找不到用于储存 xxx 的钥匙串，请点‘还原为默认’或‘取消’”**。
+  - **终极根治方案**：
+    每个账号保持各自独立的真实目录，并在其中**自动初始化一个专属、自包含、默认免密解锁的私有钥匙串数据库（`login.keychain-db`）**：
+    ```bash
+    /Users/hi/.gemini_accounts/<acc>/Library/Keychains/login.keychain-db
+    ```
+    这样既杜绝了穿透到宿主机，又让 macOS 能瞬间找到默认钥匙串完成静默读写，**彻底消灭烦人的系统弹窗**！
+- **自愈防穿透与钥匙串自动筑底守卫**：
   `agy_wrapper_rust`（`executor.rs`、`login.rs`）与 `poly_mission_control`（`fs_ops.rs`）中均已固化自动修复逻辑：
   ```rust
   let lib_keychains = target_home.join("Library").join("Keychains");
@@ -48,8 +51,25 @@
   if !lib_keychains.exists() {
       let _ = fs::create_dir_all(&lib_keychains);
   }
+  let kc_db = lib_keychains.join("login.keychain-db");
+  if !kc_db.exists() {
+      if let Some(kc_str) = kc_db.to_str() {
+          let _ = Command::new("security")
+              .env("HOME", &target_home)
+              .args(&["create-keychain", "-p", "nopassword", kc_str])
+              .output();
+          let _ = Command::new("security")
+              .env("HOME", &target_home)
+              .args(&["default-keychain", "-s", kc_str])
+              .output();
+          let _ = Command::new("security")
+              .env("HOME", &target_home)
+              .args(&["list-keychains", "-d", "user", "-s", kc_str])
+              .output();
+      }
+  }
   ```
-  任何误建或历史遗留的软链接，在启动或新增账号时都会被自动拔除并重建成独立空目录。
+  任何误建或历史遗留的软链接，在启动或新增账号时都会被自动拔除并重建成独立私有钥匙串。
 
 ---
 

@@ -44,12 +44,38 @@ pub fn handle_login_command(args: &[String]) -> anyhow::Result<bool> {
                 }
             }
 
-            // 隔离 Keychains 目录
+            // 隔离 Keychains 目录与静默专用钥匙串
             let lib_keychains = target_home.join("Library").join("Keychains");
             if lib_keychains.is_symlink() {
                 let _ = fs::remove_file(&lib_keychains);
             }
             let _ = fs::create_dir_all(&lib_keychains);
+            let kc_db = lib_keychains.join("login.keychain-db");
+            if let Some(kc_str) = kc_db.to_str() {
+                if !kc_db.exists() {
+                    let _ = std::process::Command::new("security")
+                        .env("HOME", &target_home)
+                        .args(&["create-keychain", "-p", "nopassword", kc_str])
+                        .output();
+                    let _ = std::process::Command::new("security")
+                        .env("HOME", &target_home)
+                        .args(&["default-keychain", "-s", kc_str])
+                        .output();
+                    let _ = std::process::Command::new("security")
+                        .env("HOME", &target_home)
+                        .args(&["list-keychains", "-d", "user", "-s", kc_str])
+                        .output();
+                }
+                // 每次登录均静默解锁并解除休眠锁定，杜绝系统弹窗拦截
+                let _ = std::process::Command::new("security")
+                    .env("HOME", &target_home)
+                    .args(&["unlock-keychain", "-p", "nopassword", kc_str])
+                    .output();
+                let _ = std::process::Command::new("security")
+                    .env("HOME", &target_home)
+                    .args(&["set-keychain-settings", kc_str])
+                    .output();
+            }
 
             println!("=======================================================");
             println!("  Adding/Logging in Account {} ({})", idx, acc_name);

@@ -29,4 +29,6 @@ triggers:
    `/Users/hi/niuma/scripts/manage_services.sh restart hysteria`
 4. 查看代理自愈守护日志:
    `tail -n 20 /Users/hi/niuma/proxy_health_checker.log`
+5. 一键热切换/重启并自动健康探测:
+   `/Users/hi/niuma/bin/hy2_switch auto`
 

@@ -1,0 +1,31 @@
+#!/bin/bash
+# hy2_switch - Hysteria 2 节点测速、探活与热切换工具
+set -e
+
+ACTION="${1:-check}"
+
+case "$ACTION" in
+    check|status)
+        echo "=== Hysteria 2 专网节点健康探测 ==="
+        if pgrep -f "hysteria client" >/dev/null 2>&1; then
+            echo "[状态] 进程运行正常 (PID: $(pgrep -f "hysteria client" | head -1))"
+            IP=$(curl -s --connect-timeout 3 -x socks5h://127.0.0.1:10808 https://api.ipify.org 2>/dev/null || echo "无法获取")
+            echo "[出口] 公网落地 IP: $IP"
+            LATENCY=$(curl -o /dev/null -s -w "%{time_total}s\n" --connect-timeout 5 -x socks5h://127.0.0.1:10808 https://www.google.com 2>/dev/null || echo "超时")
+            echo "[延迟] Google 握手耗时: $LATENCY"
+        else
+            echo "[状态] Hysteria 2 未在运行！"
+            exit 1
+        fi
+        ;;
+    restart|switch|auto)
+        echo "正在执行 Hysteria 2 节点重连与重启..."
+        /Users/hi/niuma/scripts/manage_services.sh restart hysteria
+        sleep 1
+        "$0" check
+        ;;
+    *)
+        echo "Usage: hy2_switch {check|restart|switch|auto}"
+        exit 1
+        ;;
+esac

@@ -1,6 +1,6 @@
 # AGY 多账号矩阵与 macOS 钥匙串隔离规范 (Agy Multi Account)
 
-> **修订时间**：2026-09-27  
+> **修订时间**：2026-09-28  
 > **适用机型**：Apple Mac mini M2 / macOS 统一沙盒环境  
 > **状态**：全系统已固化并上线运行
 
@@ -42,7 +42,7 @@
     ```
     这样既杜绝了穿透到宿主机，又让 macOS 能瞬间找到默认钥匙串完成静默读写，**彻底消灭烦人的系统弹窗**！
 - **自愈防穿透与钥匙串自动筑底守卫**：
-  `agy_wrapper_rust`（`executor.rs`、`login.rs`）与 `poly_mission_control`（`fs_ops.rs`）中均已固化自动修复逻辑：
+  `agy_wrapper_rust`（`executor.rs`、`login.rs`）与 `poly_mission_control`（`fs_ops.rs`）中均已固化自动修复与静默解锁逻辑：
   ```rust
   let lib_keychains = target_home.join("Library").join("Keychains");
   if lib_keychains.is_symlink() {
@@ -52,8 +52,8 @@
       let _ = fs::create_dir_all(&lib_keychains);
   }
   let kc_db = lib_keychains.join("login.keychain-db");
-  if !kc_db.exists() {
-      if let Some(kc_str) = kc_db.to_str() {
+  if let Some(kc_str) = kc_db.to_str() {
+      if !kc_db.exists() {
           let _ = Command::new("security")
               .env("HOME", &target_home)
               .args(&["create-keychain", "-p", "nopassword", kc_str])
@@ -67,9 +67,20 @@
               .args(&["list-keychains", "-d", "user", "-s", kc_str])
               .output();
       }
+      // 每次启动均静默解锁并解除休眠锁定，杜绝系统弹窗拦截
+      let _ = Command::new("security")
+          .env("HOME", &target_home)
+          .args(&["unlock-keychain", "-p", "nopassword", kc_str])
+          .output();
+      let _ = Command::new("security")
+          .env("HOME", &target_home)
+          .args(&["set-keychain-settings", kc_str])
+          .output();
   }
   ```
-  任何误建或历史遗留的软链接，在启动或新增账号时都会被自动拔除并重建成独立私有钥匙串。
+  任何误建或历史遗留的软链接，在启动或新增账号时都会被自动拔除并重建成独立私有钥匙串，且启动时静默全自动解锁，绝无系统弹窗。
+- **宿主机钥匙串防睡眠锁定**：
+  若 Mac 息屏睡眠后唤醒频繁弹窗，直接执行 `security set-keychain-settings /Users/hi/Library/Keychains/login.keychain-db` 移除 `lock-on-sleep`。
 
 ---
 

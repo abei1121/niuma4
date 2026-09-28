@@ -13,12 +13,12 @@ export HOME="/Users/hi"
 export USER="hi"
 
 SERVICES=(
+    "hysteria:Hysteria 2 高速专线代理隧道 (10808/10809端口):$BIN_DIR/hysteria client --config $BASE_DIR/hysteria.yaml:$LOG_DIR/hysteria.log"
+    "proxy_health_checker_rust:代理健康监测与网络自愈服务 (自动探活):$BIN_DIR/proxy_health_checker_rust:$LOG_DIR/proxy_health_checker.log"
+    "lan_file_server:局域网高速跨设备文件传输服务 (8888端口):$BIN_DIR/lan_file_server $BASE_DIR:$LOG_DIR/lan_file_server.log"
+    "telegram_bot_rust:Telegram 手机端双向通信桥接服务 (8090端口):$BIN_DIR/telegram_bot_rust:$LOG_DIR/telegram_bot.log"
     "poly_mission_control:自媒体控制台中枢 Web 管理引擎 (8999端口):$BIN_DIR/poly_mission_control --port 8999 --host 0.0.0.0:$LOG_DIR/poly_mission_control.log"
     "system_keeper_rust:系统机械级常驻守护引擎 (孤儿收割与防卡死):$BIN_DIR/system_keeper_rust:$LOG_DIR/system_keeper.log"
-    "proxy_health_checker_rust:代理健康监测与网络自愈服务 (自动探活):$BIN_DIR/proxy_health_checker_rust:$LOG_DIR/proxy_health_checker.log"
-    "telegram_bot_rust:Telegram 手机端双向通信桥接服务 (8090端口):$BIN_DIR/telegram_bot_rust:$LOG_DIR/telegram_bot.log"
-    "lan_file_server:局域网高速跨设备文件传输服务 (8888端口):$BIN_DIR/lan_file_server $BASE_DIR:$LOG_DIR/lan_file_server.log"
-    "hysteria:Hysteria 2 高速专线代理隧道 (10808/10809端口):$BIN_DIR/hysteria client --config $BASE_DIR/hysteria.yaml:$LOG_DIR/hysteria.log"
 )
 
 is_running() {

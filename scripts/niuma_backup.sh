@@ -139,6 +139,7 @@ cp -f "${NIUMA_ROOT}/scripts/niuma_backup.sh" "${VAULT_DIR}/scripts/niuma_backup
 cp -f "${NIUMA_ROOT}/bin/tg_send" "${VAULT_DIR}/scripts/tg_send" 2>/dev/null || true
 cp -f "${NIUMA_ROOT}/bin/tg_send_file" "${VAULT_DIR}/scripts/tg_send_file" 2>/dev/null || true
 cp -f "${NIUMA_ROOT}/bin/gemini_oauth_flow" "${VAULT_DIR}/scripts/gemini_oauth_flow" 2>/dev/null || true
+cp -f "${NIUMA_ROOT}/bin/hy2_switch" "${VAULT_DIR}/scripts/hy2_switch" 2>/dev/null || true
 
 # 写入标准 .gitignore
 cat << 'EOF' > "${VAULT_DIR}/.gitignore"
@@ -289,7 +290,7 @@ fi
 
 git add -A
 COMMIT_TIME=$(date "+%Y-%m-%d %H:%M:%S")
-git commit -m "feat(vault): 牛马4号全量灵魂资产与自研工程首次脱敏容灾备份 (${COMMIT_TIME})" || true
+git commit -m "feat(vault): 牛马4号 核心技能/Wiki/自研工程增量容灾同步 (${COMMIT_TIME})" || true
 git branch -M main
 git push -u origin main --force
 

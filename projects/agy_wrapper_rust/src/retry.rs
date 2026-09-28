@@ -76,6 +76,13 @@ pub fn is_network_error(err_lower: &str) -> bool {
         || err_lower.contains("503")
         || err_lower.contains("proxy error")
         || err_lower.contains("context canceled")
+        || err_lower.contains("broken pipe")
+        || err_lower.contains("connection refused")
+        || err_lower.contains("network is unreachable")
+        || err_lower.contains("no route to host")
+        || err_lower.contains("handshake timeout")
+        || err_lower.contains("tls handshake")
+        || err_lower.contains("connection closed")
 }
 
 /// 识别 429 / ResourceExhausted 类限流错误（触发账号轮换）

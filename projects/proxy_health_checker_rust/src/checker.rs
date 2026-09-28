@@ -1,7 +1,7 @@
-use log::warn;
+use log::{info, warn};
 use reqwest::{Client, Proxy};
 
-use crate::config::{PROXY_URL, TARGET_URL, TIMEOUT};
+use crate::config::{FALLBACK_URL, PROXY_URL, TARGET_URL, TIMEOUT};
 
 pub struct Checker {
     client: Client,
@@ -34,14 +34,29 @@ impl Checker {
             Ok(resp) => {
                 let status = resp.status();
                 if status.is_success() || status.is_redirection() {
+                    return true;
+                }
+                warn!("[ProxyChecker] 主探针响应异常状态码: {}", status.as_u16());
+            }
+            Err(e) => {
+                warn!("[ProxyChecker] 主探针探测失败: {}", e);
+            }
+        }
+
+        // 双探针机制：主目标波动时探测备用 Google 端点，避免单业务抖动误判重启
+        match self.client.get(FALLBACK_URL).send().await {
+            Ok(resp) => {
+                let status = resp.status();
+                if status.is_success() || status.is_redirection() {
+                    info!("[ProxyChecker] 主探针抖动但备用探针正常，代理通道仍健康");
                     true
                 } else {
-                    warn!("[ProxyChecker] 响应异常状态码: {}", status.as_u16());
+                    warn!("[ProxyChecker] 备用探针响应异常状态码: {}", status.as_u16());
                     false
                 }
             }
             Err(e) => {
-                warn!("[ProxyChecker] 探测请求失败: {}", e);
+                warn!("[ProxyChecker] 备用探针探测失败: {}", e);
                 false
             }
         }

@@ -47,8 +47,7 @@ pub fn run_with_account_rotation(cmd_args: &[String]) {
         let target_home = Path::new(BASE_ACCOUNTS_DIR).join(acc_name);
         let _ = fs::create_dir_all(&target_home);
 
-        // 创建独立空 Keychains 目录（禁止软链到真实 Keychain！）
-        // agy 优先从 Keychain 读 token，共享 Keychain 会导致所有账号读到同一个 token
+        // 创建独立隔离 Keychains 目录与静默专用钥匙串（禁止软链到真实 Keychain！）
         #[cfg(target_os = "macos")]
         {
             let lib_keychains = target_home.join("Library").join("Keychains");
@@ -57,6 +56,32 @@ pub fn run_with_account_rotation(cmd_args: &[String]) {
             }
             if !lib_keychains.exists() {
                 let _ = fs::create_dir_all(&lib_keychains);
+            }
+            let kc_db = lib_keychains.join("login.keychain-db");
+            if let Some(kc_str) = kc_db.to_str() {
+                if !kc_db.exists() {
+                    let _ = Command::new("security")
+                        .env("HOME", &target_home)
+                        .args(&["create-keychain", "-p", "nopassword", kc_str])
+                        .output();
+                    let _ = Command::new("security")
+                        .env("HOME", &target_home)
+                        .args(&["default-keychain", "-s", kc_str])
+                        .output();
+                    let _ = Command::new("security")
+                        .env("HOME", &target_home)
+                        .args(&["list-keychains", "-d", "user", "-s", kc_str])
+                        .output();
+                }
+                // 每次启动均静默解锁并解除休眠锁定，杜绝系统弹窗拦截
+                let _ = Command::new("security")
+                    .env("HOME", &target_home)
+                    .args(&["unlock-keychain", "-p", "nopassword", kc_str])
+                    .output();
+                let _ = Command::new("security")
+                    .env("HOME", &target_home)
+                    .args(&["set-keychain-settings", kc_str])
+                    .output();
             }
         }
 

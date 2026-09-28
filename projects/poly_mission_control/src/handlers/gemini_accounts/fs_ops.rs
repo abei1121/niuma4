@@ -81,7 +81,7 @@ pub fn setup_account_environment(acc_id: &str) -> Result<String, String> {
         }
     }
 
-    // Keychains isolation (prevent macOS Keychain token leakage)
+    // Keychains isolation (prevent macOS Keychain token leakage & popup)
     let lib_dir = format!("{}/Library", target_dir);
     let keychains_dir = format!("{}/Keychains", lib_dir);
     let keychains_path = Path::new(&keychains_dir);
@@ -89,6 +89,23 @@ pub fn setup_account_environment(acc_id: &str) -> Result<String, String> {
         let _ = fs::remove_file(keychains_path);
     }
     let _ = fs::create_dir_all(keychains_path);
+    let kc_db = keychains_path.join("login.keychain-db");
+    if !kc_db.exists() {
+        if let Some(kc_str) = kc_db.to_str() {
+            let _ = std::process::Command::new("security")
+                .env("HOME", &target_dir)
+                .args(&["create-keychain", "-p", "nopassword", kc_str])
+                .output();
+            let _ = std::process::Command::new("security")
+                .env("HOME", &target_dir)
+                .args(&["default-keychain", "-s", kc_str])
+                .output();
+            let _ = std::process::Command::new("security")
+                .env("HOME", &target_dir)
+                .args(&["list-keychains", "-d", "user", "-s", kc_str])
+                .output();
+        }
+    }
 
     Ok(cli_dir)
 }

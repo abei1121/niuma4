@@ -12,6 +12,7 @@
 ## 2. 独立自治与单向隔离铁律 (Independent Autonomy & Zero Leaks)
 - **绝对工作区边界**：唯一合法工作目录为 `/Users/hi/niuma`。所有自媒体剪辑资产、转码脚本、知识库与配置均仅在此目录及其子目录内持久化。
 - **严防越界**：绝不修改或触碰宿主机 `/Users/hi/niuma` 之外的日常个人文件与系统文件。
+- **母体资产严禁跨机探查铁律 (No Spurious Cross-Machine Probing)**：Mac mini M2 是现役 10 大核心技能库（`skills/`）、知识图谱（`wiki/`）与工程母体的**唯一真理源 (Single Source of Truth)**。本机资产演进、审计与灾备 100% 在 Mac 本地闭环，严禁就本地事务向 182 或其他外机发起任何窥探式 SSH 连接与无效网络 IO。
 - **安全灾备与脱敏**：异地灾备同步仅限脱敏资产与纯源码，严禁在未经脱敏前同步敏感密钥。
 
 ## 3. 视频剪辑中枢唯一定点 (Single Source of Truth)
@@ -41,9 +42,9 @@
 - 全系统所有模块在涉及大模型调用时，一律强制优先使用本地原生 AGY 大模型引擎。
 - 默认采用 Gemini 3.8 系列最新旗舰梯队。
 
-## 9. 严禁轮询与杜绝死循环铁律 (Strict Anti-Busy-Wait & Anti-Loop Law)
-- 严禁主动轮询：后台长任务执行期间，严禁连续高频轮询任务状态，严禁使用小周期 schedule 模拟 sleep。
-- 响应式唤醒（Reactive Wakeup）：触发长任务或后台命令后，立即停止调用工具结束当前回合，静待系统事件触发被动唤醒。
+## 9. 严禁轮询与长任务触发即切断工具链铁律 (Strict Anti-Busy-Wait & Fire-and-Stop Law)
+- **严禁主动轮询**：后台长任务执行期间，严禁连续高频轮询任务状态，严禁使用 manage_task(Action="status") 探查，严禁使用小周期 schedule 模拟 sleep。
+- **触发即切断工具链 (Fire-and-Stop)**：一旦命令转入后台任务（异步），除致命中断外，**当轮回合强制立即停止一切工具调用**，只用单句文字向命主报备，绝对静待系统事件触发被动唤醒，杜绝任何多余的 status 探查。
 
 ## 10. 增量编译缓存保护铁律 (Incremental Build Cache Protection Law)
 - 严禁无脑清理 `rm -rf target`。核心 Rust 工程的 `target` 目录必须严格保留，享受秒级增量构建。
@@ -86,11 +87,11 @@
     1. **人生运势历 DApp** (`obs.xiaojiucai.pro`)：工程定点 `/Users/hi/niuma/projects/obsxiaojiucai`，业务规范定点技能 `life_script_ops`。
     2. **Web3 细狗 DApp** (`raw.xiaojiucai.pro`)：工程定点 `/Users/hi/niuma/projects/rawxiaojiucai`，业务规范定点技能 `dapp_keeper`。
   - **业务技能静默隔离**：`life_script_ops` 与 `dapp_keeper` 仅在专门从事对应 DApp 研发与排盘业务时调用，自媒体视频剪辑工作流中保持静默绝不唤醒。
-- **算力分流与标准化发布铁律 (Mac M2 编译 -> J3710 纯托管)**：
-  - J3710 宿主机 CPU 算力有限，严禁在 J3710 生产机直接执行重型编译（`npm run build`）。
-  - 所有前端构建统一在 Mac mini M2 本地高速完成。
-  - 生产发布必须强制调用工程根目录标准化脚本 `deploy.sh`：
-    - `obsxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/obsxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
-    - `rawxiaojiucai/deploy.sh`：M2 编译打包 -> git 源码推送 -> 远端 `/home/a/dapp/rawxiaojiucai` 源码同步 -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
+- **J3710 弱电硬件绝对零计算铁律 (Zero-Compute Law for J3710)**：
+  - J3710 宿主机（牛马2号，`192.168.1.182`）是功耗仅 6W 的弱电嵌入式 CPU，绝对严禁在 J3710 生产机执行日常重型编译（严禁 `npm run build`、严禁 `cargo build`、严禁 `make` 及大数据运算）。
+  - **Mac mini M2 独揽 100% 编译算力**：所有前端构建、TypeScript 静态分析与后端二进制必须在 Mac mini M2 本地高速完成。
+  - **强制全量双重预压缩 (Brotli/Gzip)**：生产发布必须强制调用工程根目录标准化脚本 `deploy.sh`，且打包后必须自动执行 `brotli -q 9` 与 `gzip -9`，随 rsync 一并推流至生产机，消除 J3710 Nginx 动态压缩 CPU 负担：
+    - `obsxiaojiucai/deploy.sh`：M2 极速构建 -> brotli/gzip 双预压缩 -> git 推送 -> 远端 pull -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
+    - `rawxiaojiucai/deploy.sh`：M2 极速构建 -> brotli/gzip 双预压缩 -> git 推送 -> 远端 pull -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
 
 

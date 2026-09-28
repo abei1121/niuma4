@@ -20,9 +20,10 @@ triggers:
 - 钩子配置: `~/.gemini/config/hooks/hooks.json`
 
 ## 拦截规则与阈值
-1. **任务轮询拦截**：60 秒内对同一后台任务调用 `manage_task(Action="status")` 超过 2 次直接拦截报错。
+1. **任务轮询拦截 (Fire-and-Stop 铁律)**：后台长任务启动后，当轮强制立即停止工具调用，坚决等待系统事件触发被动唤醒；60 秒内对同一后台任务调用 `manage_task(Action="status")` 超过 2 次直接拦截报错。
 2. **高频定时器拦截**：拦截 `schedule(DurationSeconds <= 30)` 的短周期轮询模拟行为。
 3. **危险命令拦截**：机械拦截 `rm -rf /`、`rm -rf ~`、fork bomb、未保护的级联删除等高危操作。
+4. **跨机无效探针拦截**：严禁在 Mac 本地资产（Skill、Wiki、记忆、本地工程）演进期间向 J3710 (`192.168.1.182`) 发起窥探式 SSH 查询，严格守护本机母体自治边界。
 
 ## Hook I/O 协议 (AGY PreToolUse 标准)
 - **Input (stdin)**: `{"toolCall": {"name": "...", "args": {...}}, "stepIdx": N, ...}`

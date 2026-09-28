@@ -43,15 +43,21 @@ triggers:
 ```
 探测项覆盖：TON 主网区块高度与延迟、Pinata 专有 IPFS 网关鉴权、XGBot 微服务 HTTP 心跳与内存监控、Nginx 8080/80 站点响应。
 
-### 2. 细狗前端增量编译与发布
+### 2. 细狗前端增量编译与跨机原子发布 (Mac M2 极速构建 -> J3710 生产推流)
+【J3710 算力零消耗铁律】：J3710 (牛马2号) 是 6W 弱电 CPU，**绝对严禁在 J3710 上直接执行 `npm run build`**！
+所有前端构建必须在 Mac mini M2 本地执行标准化发布流水线：
 ```bash
-cd /home/a/dapp/rawxiaojiucai
-npm run build
-# 检查 dist 构建产物完整性
-ls -lh dist/index.html
-# 验证 Nginx 配置并热重载
-nginx -t && sudo systemctl reload nginx
+# 在 Mac mini M2 本地执行
+cd /Users/hi/niuma/projects/rawxiaojiucai
+./deploy.sh "commit 提交信息"
 ```
+执行链路：
+- Mac M2 本地极速构建（`npm run build`，耗时约 3 秒，彻底解放 J3710 算力）；
+- 自动双重预压缩：`brotli -q 9` 与 `gzip -9` 生成 `.br` 与 `.gz` 产物；
+- Git 自动提交并推送到 GitHub 远端；
+- SSH 远程触发 J3710 (`192.168.1.182`) `/home/a/dapp/rawxiaojiucai` 执行 `git pull`；
+- `rsync -avz --delete dist/` 零编译原子推流预压缩产物至生产机；
+- 远程执行 `sudo nginx -t && sudo systemctl reload nginx` 完成无感平滑上线。
 
 ### 3. XGBot 本地微服务排查与维护
 ```bash

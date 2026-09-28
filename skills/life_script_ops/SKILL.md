@@ -284,25 +284,30 @@ triggers:
 ```
 执行链路：
 - 自动暂存未提交修改，执行 `git pull --rebase origin main`；
-- Mac mini M2 本地极速构建（`npm run build`，耗时约 3 秒，彻底解放 J3710 算力）；
+- Mac mini M2 本地极速构建（`npm run build`，耗时约 3.3 秒，彻底解放 J3710 算力）；
+- **双重预压缩**：自动对产物执行 `brotli -q 9` 与 `gzip -9`，生成 `.br` 与 `.gz` 静态预压缩产物；
 - 源码提交并推送到 GitHub 远端；
 - SSH 远程触发 J3710 (`192.168.1.182`) `/home/a/obsxiaojiucai` 执行 `git pull`；
-- `rsync -avz --delete dist/` 零编译原子推流至生产机；
+- `rsync -avz --delete dist/` 零编译原子推流预压缩产物至生产机；
 - 远程执行 `sudo nginx -t && sudo systemctl reload nginx` 完成无感热上线。
 
 若在 J3710 本地离线环境维护，亦可调用本地脚本：`/home/a/bin/deploy_obs_site.sh`。
 
 ### 2. 后端 Rust 流式服务编译与发布
-若修改了 `obs_membership_rust`：
+若修改了 `obs_membership_rust`，登录 J3710 宿主机后执行标准化热发布流水线：
 ```bash
+ssh a@192.168.1.182
+source ~/.cargo/env
+export https_proxy=http://127.0.0.1:10809 http_proxy=http://127.0.0.1:10809 all_proxy=socks5://127.0.0.1:10808
 cd /home/a/obs_membership_rust
 cargo build --release
-systemctl stop obs_membership.service
-cp target/release/obs_membership_rust /home/a/bin/obs_membership
-systemctl daemon-reload
-systemctl start obs_membership.service
+cp target/release/obs_membership_rust /home/a/bin/obs_membership_new
+mv -f /home/a/bin/obs_membership_new /home/a/bin/obs_membership
+echo a | sudo -S systemctl restart obs_membership
 curl -s http://127.0.0.1:8096/api/health
 ```
+- **工具链就绪**：User `a` 本地已配置完整 Rust 1.98.1 工具链，常驻内存仅 ~9.9MB（严格受控于 15MB 硬件红线内）。
+- **进程看门狗自愈**：`system_keeper_rust` 对 `obs_membership` 进行 24 小时保活，若检测到进程退出自动拉起。
 
 ### 3. 客服日常运维（查码、解绑重置与新码入库）
 ```bash
@@ -338,4 +343,11 @@ curl -s http://127.0.0.1:8096/api/health
 4. **全站防白屏与前端健壮性规范 (Anti-Blank Screen Standard)**：
    - **顶层 Error Boundary 强制守卫**：必须在 `index.tsx` 顶层使用 `GlobalErrorBoundary` 包裹 `<App />`，杜绝任何未捕获异常引发 React 卸载导致全白屏；
    - **HTML 内联脚本 100% 纯原生 JavaScript**：`index.html` 顶层内联 `<script>` 直接由浏览器解析，严禁混入任何 TypeScript 语法；
-   - **发版前强制 TypeScript 语义检查**：Vite 构建仅做代码转译不报错未定义变量，重构后发布前必须严格执行 `npx tsc --noEmit` 验证通过，确保 0 错误后方可执行 `deploy_obs_site.sh`。
+   - **发版前强制 TypeScript 语义检查**：Vite 构建仅做代码转译不报错未定义变量，重构后发布前必须严格执行 `npx tsc --noEmit` 验证通过，确保 0 错误后方可执行 `deploy.sh`。
+5. **正统数术算法防御规范 (Canon Defense Standard)**：
+   - **繁简统一字典强映射**：星曜名与四化映射（`SI_HUA_MAP` 与 `st`）必须 100% 覆盖繁体字根（`廉贞->廉貞`、`破军->破軍`、`左辅->左輔`），严禁因简繁异构导致钦天四化漏算；宜忌列表清洗空项与 `无/無`。
+   - **立极换年与八字节气绝对解耦**：正统紫微斗数严格依农历正月初一换年，生年干支与来因宫立极兜底必须使用 `lunarFourPillars`，绝不可混用立春换年的 `solarTermsFourPillars`。
+   - **宗师提示词道统繁体**：四化标识强制统一为 `['祿', '權', '科', '忌']`，杜绝简体字混入提示词上下文。
+   - **真太阳时方向判定**：经度字段统一根据正负值显式标注 `°E` / `°W`，杜绝西经被硬编码为东经。
+   - **海报流式排版双防线**：长文自适应行高推移配合单词边界分词器，底部印鉴兜底 Y 坐标动态计算 `Math.max(1180, cursorY + 28)`，100% 防溢出防撞车。
+   - **全盘推演与追问严格计费隔离**：后端严格判定 `!q.trim().is_empty()`，空 question 必须走 6 点全盘推演逻辑并加载宗师提示词，杜绝空串偷跑 1 点追问计费。

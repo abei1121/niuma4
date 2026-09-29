@@ -203,3 +203,26 @@ ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 * `components/PosterMuscleFigure.tsx` (139行)：解剖学肌肉发光动态 SVG 矢量组件。
 * `components/posterHelpers.ts` (143行)：部位提取、做功吨位计算、8国语言战斗标题与文案生成。
 * `components/posterI18n.ts` (237行)：8国语言词典与本地化映射。
+
+### 6. 7 大肌群与有氧专属解剖发光色彩矩阵 (Anatomical Chromatic Canon)
+* **手臂 (Arms / 麒麟臂)**：双臂肱二头肌、肱三头肌与前臂肌群呈核聚变双色渐变高亮（琥珀金 `#f59e0b` ~ 爆破红 `#ef4444`），浮水印透射「麒麟臂峰爆」，副标题深度撕裂肱二三头肌纤维；
+* **腿部 (Legs)**：股四头肌与腘绳肌点亮赤红发光渐变（`#ef4444` ~ `#991b1b`），下肢钢铁泰坦；
+* **臀部 (Glutes)**：臀大肌与臀中肌点亮尊贵琥珀金渐变（`#f59e0b` ~ `#b45309`）；
+* **胸部 (Chest)**：左右胸大肌上中下束点亮爆裂赤红，主攻双开门维度；
+* **背部 (Back)**：斜方肌与倒三角背阔肌点亮金色光芒，强化钢铁脊梁；
+* **肩部 (Shoulders)**：左右三角肌前中后束立体点亮，塑造南瓜肩；
+* **核心 (Core)**：腹直肌与腹外斜肌雕刻点亮；
+* **有氧 (Cardio)**：中心动力核与血流循环节点呈天青冰蓝（`#38bdf8`）核爆光效。
+
+### 7. Telegram 2K 视觉走查与真机推流 SOP (Telegram Visual Verification SOP)
+在开发或迭代海报时，通过 Chrome Headless 2K 渲染并极速推流至命主 Telegram 进行真机视觉把控：
+```bash
+# 1. Mac 本地 Chrome Headless 2K Retina (1440x2560) 渲染
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --headless=new --disable-gpu --window-size=720,1280 --force-device-scale-factor=2 \
+  --screenshot=/path/to/poster.png --virtual-time-budget=2000 \
+  file:///path/to/poster.html
+
+# 2. 调用 Telegram 专用推流工具秒级推送至命主手机
+/Users/hi/niuma/bin/tg_send_file "/path/to/poster.png" "战报海报视觉走查"
+```

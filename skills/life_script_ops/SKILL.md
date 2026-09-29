@@ -146,6 +146,8 @@ triggers:
   - 黄历万年历词条库: `/home/a/obsxiaojiucai/utils/almanacTerms.ts`（多语言词条、严格 <= 250 行）
   - 真太阳时算法: `/home/a/obsxiaojiucai/utils/solarTime.ts`
   - 命盘树结构化提取: `/home/a/obsxiaojiucai/utils/astrolabePromptBuilder.ts`
+  - 双宗师数理先验总纲预计算: `/home/a/obsxiaojiucai/utils/astrolabeMasterOutlines.ts`（钦天象数总纲与中州星系总纲）
+  - 主理人离线命理数理审查器: `/home/a/obsxiaojiucai/inspect_astrolabe.mjs`（离线命令行毫秒级核验任意生辰）
   - 宣纸长图 Canvas 绘制引擎: `/home/a/obsxiaojiucai/utils/creatorPosterDrawer.ts`，`/home/a/obsxiaojiucai/utils/posterDrawer.ts`
   - 站内流式推演与能量通信服务: `/home/a/obsxiaojiucai/utils/fortuneService.ts`
 - **设备指纹与客户端验签**:
@@ -353,3 +355,12 @@ curl -s http://127.0.0.1:8096/api/health
    - **真太阳时方向判定**：经度字段统一根据正负值显式标注 `°E` / `°W`，杜绝西经被硬编码为东经。
    - **海报流式排版双防线**：长文自适应行高推移配合单词边界分词器，底部印鉴兜底 Y 坐标动态计算 `Math.max(1180, cursorY + 28)`，100% 防溢出防撞车。
    - **全盘推演与追问严格计费隔离**：后端严格判定 `!q.trim().is_empty()`，空 question 必须走 6 点全盘推演逻辑并加载宗师提示词，杜绝空串偷跑 1 点追问计费。
+   - **双宗师数理先验总纲置顶与防幻觉铁律**：大模型本质存在空间查找盲区，端侧纯代码必须在推演发起前自动预计算【欽天門·象數因果先驗總綱】（来因定极、生年四化落宫、离心/向心自化、绝对破耗对冲警示）与【中州派·三方四正星系格局總綱】（命身三方四正星曜庙旺利陷、同宫六吉六煞统计、运限四重叠宫），并置顶注入大模型输入首段，彻底杜绝大模型自己翻找产生幻觉或流于通俗空泛。
+   - **生产环境物理级隔离与主理人离线审查规范**：生产环境前端绝对严禁包含任何 Dev 调试按钮、暗号或开关（0 攻击面，防黑客逆向）；主理人审查全部收拢至本地 Mac mini M2 专属离线审查工具 `node inspect_astrolabe.mjs [生日] [时间] [性别]`，离线秒级把关命盘数理严谨性。
+6. **移动端存桌面与 Telegram Mini App 双模体验规范 (PWA & Telegram Mini App Dual-Mode Standard)**：
+   - **组件唯一定点**：`/home/a/obsxiaojiucai/components/PwaInstallPrompt.tsx`（本地 Mac 为 `/Users/hi/niuma/projects/obsxiaojiucai/components/PwaInstallPrompt.tsx`），单一职责且严格受控于 250 行以内；
+   - **Telegram Mini App 原生运行环境**：通过 `window.Telegram.WebApp.initData`、`TelegramWebviewProxy` 或 `tgWebApp` 严格检测。在 Telegram 小程序内，**100% 物理隐藏“存至桌面”浮标与弹窗**，彻底杜绝多余的安装干扰，维持原生小程序轻量感与无缝体验；
+   - **Telegram 内置浏览器 (In-App Browser)**：动态将右下角桌面引导浮标转化为 `[ ✈️ TG 小程序 ]`，弹窗呈现 Telegram Mini App 专属启动卡片，支持一键无感唤醒 `@LifeScriptbot` 打开原生小程序；
+   - **分端精准指引**：iOS Safari 提供 2 步极简添加到主屏幕图文指引；非 Safari 提供一键复制链接并在 Safari 打开；Android 提供快捷方式引导；微信与外部社交环境引导在默认浏览器中打开。
+
+

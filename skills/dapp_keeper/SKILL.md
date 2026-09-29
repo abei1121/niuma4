@@ -102,17 +102,27 @@ curl -s http://127.0.0.1:8095/health
    - Service Worker 必须升级为 v3 架构，显式捕获并离线缓存跨域图片流（`response.type === 'opaque'`），实现身材照一次下载、永久离线秒开，彻底斩断重复海外流量与网关消耗。
 
 9. **动作库单源配置与解剖学分类标准 (Exercise Anatomy Standard)**:
-   - 动作库唯一定点：`/home/a/dapp/rawxiaojiucai/data/exercises/`，包含胸、背、肩、臂、臀、腿、核心及有氧 8 大模块，标准体量为 309 动大满贯（279 无氧 + 30 自重有氧）。
-   - 绝对杜绝同义李鬼：严禁物理设备、使用姿态与受力轨迹 100% 相同的条目因换用同义词而重复建卡（如严禁踢腿与腿屈伸、臂屈伸与三头伸展、下压与压榨、反向飞鸟与后束飞鸟重合）。
-   - 严禁解剖学错位：髋内收（Adduction）必须 100% 归属于大腿内侧肌群（Legs）；髋外展（Abduction）必须 100% 归属于臀中肌/臀小肌（Glutes），严禁交叉倒置。
-   - 鼓励“无限可能”：单手 vs 双手、宽距 vs 窄距、不同把手配件（直杆/V柄/绳索）、不同站距角度等具有真实微观发力差异的变体动作全面鼓励并完整保留。
-10. **三大平台教程分流与移动端原生 Scheme 跳出规范 (Tri-Platform Tutorial & Native Scheme Standard)**:
-    - 针对国内用户 (`Language.ZH_CN`)：唯一主攻**抖音（Douyin）**。中文动作名称必须对接抖音顶级健身博主标准词条；搜索词严格构造为 `"${cleanZhName} 教程"`，通过 `snssdk1128://search?keyword=...` 极速调起，未安装则静默写入剪贴板。
-    - 针对海外用户（外国语言环境）：双核心锁定 **YouTube 与 TikTok**。
-      - 英文名称必须严格遵循国际健美通用标准术语（如 `Svend Press`、`Smith Machine Bulgarian Split Squat`、`Dip Machine`、`Cable Rear Delt Crossover`）；
+   - 动作库唯一定点：`/home/a/dapp/rawxiaojiucai/data/exercises/`（本地 Mac 为 `/Users/hi/niuma/projects/rawxiaojiucai/data/exercises/`），包含胸、背、肩、臂、臀、腿、核心及有氧 8 大模块，标准体量为 **330 动大满贯（整整 300 个无氧经典与高收益变式 + 30 个自重有氧）**。
+   - **7 大无氧肌群 300 动作权威分布**：
+     - **胸部 (Chest)**: 47 个（增补：吉隆达双杠臂屈伸、地板卧推、六角哑铃挤压推）
+     - **背部 (Back)**: 46 个（增补：米道斯地雷架划船、海豹划船、吉尔索俯斜耸肩）
+     - **肩部 (Shoulders)**: 45 个（增补：吕小军大平举、埃及式绳索侧平举、Y字俯斜平举）
+     - **手臂 (Arms)**: 44 个（增补：蜘蛛弯举、泰特推举、佐特曼弯举）
+     - **腿部 (Legs)**: 46 个（增补：西斯深蹲、北欧腘绳肌弯举、哥萨克深蹲）
+     - **臀部 (Glutes)**: 40 个（增补：青蛙泵感臀桥、地雷架单腿硬拉、消防栓式侧抬腿）
+     - **核心 (Core)**: 32 个（增补：李小龙龙旗、帕洛夫抗旋转推、古典真空腹内缩）
+   - **全矩阵 8 语种支持**：每个动作必须完整配置 8 国语言字典（简中、繁中、英文、日文、韩文、俄文、港澳粤语、越南语）及准确器材属性（Barbell / Dumbbell / Cable / Machine / Bodyweight / Smith Machine）。
+   - **绝对杜绝同义李鬼**：严禁物理设备、使用姿态与受力轨迹 100% 相同的条目因换用同义词而重复建卡（如严禁踢腿与腿屈伸、臂屈伸与三头伸展、下压与压榨、反向飞鸟与后束飞鸟重合）。
+   - **严禁解剖学错位**：髋内收（Adduction）必须 100% 归属于大腿内侧肌群（Legs）；髋外展（Abduction）必须 100% 归属于臀中肌/臀小肌（Glutes），严禁交叉倒置。
+   - **鼓励解剖学生物力学进阶变体**：单手 vs 双手、宽距 vs 窄距、地雷架圆弧力矩、自重离心抗阻（北欧弯举/西斯深蹲/龙旗）、深层腹横肌真空吸附等具有显著发力孤立差异的高收益动作全面规范入库。
+10. **三大平台教程分流、动态部位前缀与移动端原生 Scheme 跳出规范 (Tri-Platform Tutorial & Body Part Prefix Standard)**:
+    - **动态部位关键词前缀铁律 (Body Part Search Prefix Law)**：在调起搜索或写入剪贴板时，动作名称前**必须动态强制前置部位名称**（例如中文：`${bodyPartName} ${cleanZhName} 教程`，如 `胸部 杠铃平板卧推 教程`；英文：`${bodyPartName} ${enName} tutorial` / `${bodyPartName} ${enName} form`），确保算法精准命中肌肉群专项教学，杜绝同名/泛搜索歧义。
+    - **针对国内用户 (`Language.ZH_CN`)**：唯一主攻**抖音（Douyin）**。中文动作名称必须对接抖音顶级健身博主标准词条；搜索词构造为 `"${bodyPartName} ${cleanZhName} 教程"`，通过 `snssdk1128://search?keyword=...` 极速调起，未安装则静默写入剪贴板。
+    - **针对海外用户（外国语言环境）**：双核心锁定 **YouTube 与 TikTok**。
+      - 英文名称必须严格遵循国际健美通用标准术语（如 `Svend Press`、`Smith Machine Bulgarian Split Squat`、`Gironda Dips`、`Cable Rear Delt Crossover`）；
       - **移动端原生 Scheme 纯净跳出（严禁弹 Web 网页与白屏）**：针对移动端（iOS / Android / PWA / 带壳 APK），YouTube 100% 采用系统原生 App Scheme（iOS 为 `youtube://results?search_query=${encodeURIComponent(query)}`，Android 为 `vnd.youtube://results?search_query=...`）；
       - **绝对禁止在移动端调用 `window.open` 或弹出多余 Web 标签页**，杜绝用户切回 DApp 时面对空白/超时的 YouTube 网页端；剪贴板复制采用后台非阻塞异步 Promise，绝不消耗用户手势激活凭据；
-      - TikTok 搜索词：`${enName} form`，通过 `snssdk1233://search?keyword=...` 极速调起；
+      - TikTok 搜索词：`${bodyPartName} ${enName} form`，通过 `snssdk1233://search?keyword=...` 极速调起；
       - 桌面端（PC/Mac 浏览器）保留新标签页打开 Web 搜索，Telegram 环境走官方 `openLink`；
       - 前端卡片自适应：非中文简体环境下，自动隐藏中国版抖音按钮，自适应展示宽大版 3 列网格（`[部位] [YouTube] [TikTok]`），提升海外握持操作手感。
 11. **动作卡片纯净规范 (Exercise Card Pure-Tutorial Standard)**:
@@ -134,8 +144,10 @@ curl -s http://127.0.0.1:8095/health
     - **彻底物理拔除开屏层**: `index.html` 与 `index.tsx` 彻底物理拔除 `#initial-loader` 遮罩、Logo 呼吸动画及所有定时器；首屏直出曜石黑底色与无氧力量训练组件，零遮罩、零延时，实现原生 App 级 0ms 极速直开；
     - **身材秀全平台自媒体原生 Scheme 纯净跳出**: 名人堂身材秀（DoubleDoorClub）卡片右上角全部自媒体链接（TikTok、Instagram、YouTube、抖音、小红书、Telegram）以及入驻申请测试链接，**100% 物理剔除 `<a target="_blank">` 与 Web 网页跳转**；移动端统一调用 `launchCreatorSocialApp`，直接调起对应客户端协议，绝不在移动端打开多余 Web 标签页，彻底消灭切回 DApp 时的白屏网页端；
     - **全域 ErrorBoundary 熔断防护**: `index.tsx` 顶层常驻 `GlobalErrorBoundary`，全域拦截任何未捕获异常，彻底消灭全白死屏并提供一键刷新恢复通道。
-16. **移动端添加至主屏幕与桌面安装引导规范 (PwaInstallPrompt Standard)**:
-    - **组件唯一定点**: `/home/a/dapp/rawxiaojiucai/components/PwaInstallPrompt.tsx`，必须平级挂载于 `App.tsx` 根状态，与 `MainHeader.tsx` 右上角下载按钮全局事件（`open-pwa-install`）无缝联动；
+16. **移动端存桌面与 Telegram Mini App 双模适配规范 (PWA & Telegram Mini App Dual-Mode Standard)**:
+    - **组件唯一定点**: `/home/a/dapp/rawxiaojiucai/components/PwaInstallPrompt.tsx`（本地 Mac 为 `/Users/hi/niuma/projects/rawxiaojiucai/components/PwaInstallPrompt.tsx`），必须平级挂载于 `App.tsx` 根状态，与 `MainHeader.tsx` 右上角下载按钮全局事件（`open-pwa-install`）无缝联动；
+    - **Telegram Mini App 原生运行环境**: 通过 `window.Telegram.WebApp.initData`、`TelegramWebviewProxy` 或 `tgWebApp` 严格检测。在 Telegram 小程序内，**100% 物理隐藏“存至桌面”浮标与弹窗**，彻底杜绝多余的安装干扰，维持原生小程序轻量感与无缝体验；
+    - **Telegram 内置浏览器 (In-App Browser)**: 动态将右下角桌面引导浮标转化为 `[ ✈️ TG 小程序 ]`，弹窗呈现 Telegram Mini App 专属启动卡片，支持一键无感唤醒 `@rawscrawny_bot` 打开原生小程序；
     - **全环境智能嗅探**: 独立运行模式（PWA Standalone 或 Capacitor 原生壳）100% 静默无感，桌面端默认不骚扰；
     - **防疲劳自然冷却**: 移动端浏览器采用 24 小时自然冷却与会话级关闭记忆，避免重复弹窗打扰用户；
     - **智能唤醒与常驻浮标**: 移动端进入 6 秒或下滑超过 160px 优雅弹出；用户关闭后在右下角常驻精致紧凑的悬浮微标「**存至桌面**」，随时一键呼出；
@@ -143,7 +155,7 @@ curl -s http://127.0.0.1:8095/health
       - iOS 原生 Safari：提供 Safari 分享 -> 添加到主屏幕 2 步极简图文教程与动态下跳箭头；
       - iOS 非 Safari（Chrome / Firefox 等）：明确 Apple 系统限制并提供【一键复制并在 Safari 打开】；
       - Android 移动端：提供 APK 直链高速下载与网页快捷方式双通道；
-      - 社交应用内（微信 / TG 等）：引导在默认浏览器中打开；
+      - 社交应用内（微信 / TG 等）：引导在默认浏览器中打开或直跳小程序；
     - **三大硬核亮点胶囊**: 【首屏秒开】·【全屏沉浸】·【离线速练】，坚守零 Emoji、零星星纯粹工业级调性。
 17. **多小文件解耦与单文件严格 <250 行规范 (Small File Standard)**:
     - 全系统强制拆分为模块化解耦架构，严禁单文件巨石结构；单代码文件严格控制在 **250 行以内**，单一职责，从源头杜绝修改引发的隐蔽副作用；

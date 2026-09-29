@@ -159,7 +159,13 @@ curl -s http://127.0.0.1:8095/health
     - **三大硬核亮点胶囊**: 【首屏秒开】·【全屏沉浸】·【离线速练】，坚守零 Emoji、零星星纯粹工业级调性。
 17. **多小文件解耦与单文件严格 <250 行规范 (Small File Standard)**:
     - 全系统强制拆分为模块化解耦架构，严禁单文件巨石结构；单代码文件严格控制在 **250 行以内**，单一职责，从源头杜绝修改引发的隐蔽副作用；
-    - `WorkoutPoster.tsx` (234行)、`DoubleDoorClub.tsx` (234行)、`PwaInstallPrompt.tsx` (234行)、`FeedItem.tsx` (235行)、`JoinForm.tsx` (234行)、`App.tsx` (242行) 等全工程所有文件必须严格受控于 250 行以内。
+    - `WorkoutPoster.tsx` (200行)、`WorkoutPosterCard.tsx` (149行)、`PosterMuscleFigure.tsx` (139行)、`posterHelpers.ts` (143行)、`posterI18n.ts` (237行)、`DoubleDoorClub.tsx` (234行)、`PwaInstallPrompt.tsx` (234行)、`FeedItem.tsx` (235行)、`JoinForm.tsx` (234行)、`App.tsx` (242行) 等全工程所有文件必须严格受控于 250 行以内。
+18. **2K Retina 战神海报与 8 国语言矩阵规范 (2K Retina 8-Language Poster Standard)**:
+    - **纯净单语种隔离**: 8 语言矩阵（中简、中繁、中港、英、日、韩、俄、越）严格执行 100% 纯净语言隔离。英文环境 100% 全英文，中文环境 100% 全中文，彻底消灭中英文夹杂混排；
+    - **超大字号移动端直读**: 彻底消灭移动端小字难读痛点。核心吞铁总做功与连续打卡采用 52px Oswald 巨型数字，战力评级 38px，主战斗标题 30px，状态徽标 16px，二维码 110px 配备琥珀金立体外框，社交媒体手机端开图秒读；
+    - **动态多部位感知与解剖图发光**: `getTrainedParts` 自动提取当日训练所有部位（如“腿部 + 臀部” / "LEGS + GLUTES"），解剖图 SVG (`PosterMuscleFigure.tsx`) 精确按部位组合点亮对应肌群（股四头肌/腘绳肌发光赤红，臀大肌发光琥珀金，上肢/胸肌/背肌按需高亮）；
+    - **底栏 Web3 品牌宣发**: 严格固定为「`官方链上永久存证 · 无国界0抽水社交打赏`」/ 「`ON-CHAIN PERMANENT PROOF · ZERO-FEE GLOBAL SOCIAL TIPPING`」；
+    - **单行不折断与多小文件解耦**: 标题与部位标签强制 `white-space: nowrap` 消除孤字断行。海报模块严格解耦为 `WorkoutPoster.tsx`、`WorkoutPosterCard.tsx`、`PosterMuscleFigure.tsx`、`posterHelpers.ts`、`posterI18n.ts` 五个小文件，全文件均严格控制在 250 行以内。
 
 ## 详细知识库定点
 - 参考规范文档: `/home/a/wiki/skills/dapp_keeper.md`

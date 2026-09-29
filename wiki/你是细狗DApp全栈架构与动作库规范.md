@@ -177,3 +177,29 @@ ssh a@192.168.1.182 "journalctl -u dapp_xgbot.service -n 50 --no-pager"
 # 重启微服务
 ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 ```
+
+---
+
+## 七、 2K Retina 战神战报海报与 8 国语言裂变矩阵架构 (2K Retina Poster Canon)
+
+### 1. 社交裂变超大字体与视觉冲击力
+* **移动端开图秒读**：彻底消灭移动端小字体。吞铁做功与连击数据采用 **52px Oswald 巨型数字**，战力评级 38px，主标题 30px，徽标 16px，二维码 110px 配合 3px 琥珀金立体外框。
+* **单行不折断**：核心战斗标题与部位标签强制执行 `white-space: nowrap; flex-shrink: 0;`，彻底消除由于文字过长导致的尴尬孤字换行。
+
+### 2. 100% 纯净语言单轨隔离 (Pure 8-Language Matrix)
+* 支持中简 (`ZH_CN`)、中繁 (`ZH_TW`)、中港 (`ZH_HK`)、英 (`EN`)、日 (`JA`)、韩 (`KO`)、俄 (`RU`)、越 (`VI`) 共 8 种语言。
+* 彻底实现 100% 纯净语言单轨隔离：选英文时全英文，选中文时全中文，绝不夹杂中英文混排。
+
+### 3. 动态部位感知与解剖图发光联动 (Dynamic Anatomical Glow)
+* 自动提取当日训练所有部位（如“腿部 + 臀部” / "LEGS + GLUTES"），并在 SVG 解剖剪影（`PosterMuscleFigure.tsx`）上精确点亮对应肌群（股四头肌/腘绳肌发光赤红，臀大肌发光琥珀金，上肢/胸肌/背肌按需高亮）。
+* 水印背景与单日战斗总结动态展示组合部位。
+
+### 4. Web3 品牌宣发定调
+* 底部背书统一为：`官方链上永久存证 · 无国界0抽水社交打赏` / `ON-CHAIN PERMANENT PROOF · ZERO-FEE GLOBAL SOCIAL TIPPING`。
+
+### 5. 严格五小文件解耦架构 (严格 <250 行)
+* `components/WorkoutPoster.tsx` (200行)：海报主入口、原生分享 API 调度、相册保存与移动端交互。
+* `components/WorkoutPosterCard.tsx` (149行)：720px 2K Retina 海报 DOM 纯净渲染。
+* `components/PosterMuscleFigure.tsx` (139行)：解剖学肌肉发光动态 SVG 矢量组件。
+* `components/posterHelpers.ts` (143行)：部位提取、做功吨位计算、8国语言战斗标题与文案生成。
+* `components/posterI18n.ts` (237行)：8国语言词典与本地化映射。

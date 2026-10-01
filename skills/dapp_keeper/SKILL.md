@@ -19,6 +19,8 @@ triggers:
 
 ## 专职执行体与定点资产
 - **细狗工程唯一主定点**: `/home/a/dapp/rawxiaojiucai/`
+- **俱乐部会员卡主定点**: `club.xiaojiucai.pro` (本地: `/Users/hi/Documents/GitHub/clubxiaojiucai`)
+- **俱乐部会员卡 TON 合约**: `EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm` (TON Mainnet)
 - **双开门名人堂组件库**: `/home/a/dapp/rawxiaojiucai/components/club/`
 - **用户身材秀嗅探与打卡统计工具**: `/home/a/dapp/rawxiaojiucai/utils/userClubCard.ts`
 - **移动端存手机与桌面引导**: `/home/a/dapp/rawxiaojiucai/components/PwaInstallPrompt.tsx`
@@ -86,15 +88,17 @@ curl -s http://127.0.0.1:8095/health
 5. **客户端边缘常驻与零服务端消耗规范**: 前端静态资产全面依赖客户端浏览器与 Service Worker 强缓存，服务端仅负责预压缩静态直发（Brotli/Gzip static）与接口反代。构建产物必须预先生成 `.br` 与 `.gz` 文件。
 6. **强制本地代理通道**: TON RPC 与 Pinata API 请求必须走 `http://127.0.0.1:10809` 代理通道。
 7. **打卡海报与身材秀专属二维码闭环规范 (Workout Proof & Club QR Standard)**:
-   - **彻底剔除 AI 星星与零 Emoji**: 严禁海报出现任何 Emoji、四芒星、Gemini / Sparkles 图标或 AI 模板元素，代之以极简红点指示器或排版胶囊，保持硬核调性与零 AI 痕迹。
+   - **严格 9:16 黄金竖屏规格**: 容器采用严格 9:16 纵向比例定点（`width: 720px, height: 1280px`，内嵌至 `WorkoutPosterCard.tsx`），通过 `html2canvas` (scale: 2) 导出 `1440x2560` 2K 视网膜超清竖屏，完全适配微信朋友圈、抖音、小红书、Instagram Stories 与 Telegram 满屏展示。
+   - **胶囊与字体微米级对齐规范**: 所有状态胶囊（如「双开门认证战神」、「极致充血 · 巅峰状态」、「部位胶囊」、「做功量等价条」）统一采用明确固定高度（28px/38px/40px/44px）、`leading-none` 与 `rounded-full` 圆角；通过前置发光 CSS 脉冲圆点指示器（绿/琥珀色）替代任何原生 Emoji 图标，彻底剥离行高异常与基线偏移，确保文字与胶囊边框黄金对齐。
+   - **彻底剔除 AI 星星与零 Emoji**: 严禁海报出现任何 Emoji、四芒星、Gemini / Sparkles 图标或 AI 模板元素，代之以极简硬件质感发光指示器与精工排版胶囊，保持纯粹硬核战神调性。
    - **多维自律打卡数据呈现**: 必须呈现「本月已练天数（THIS MONTH: X DAYS）」与「连续打卡天数（STREAK: Y DAYS）」及训练容量，结合本地 `xg_workout_history_v1` 实时计算，彻底摒除空洞单调排版，赋予用户强烈的自律成就感；
    - **全链路 8 国语言字典强同步**: `components/posterI18n.ts` 必须 100% 覆盖 8 语种对应字段（`monthTrained`、`streakTitle`、`totalTrained`、`daysUnit`、`verifiedAthleteBadge`、`myClubCardAction` 等）；
    - **用户身材秀条目双向智能寻址**: 用户连接钱包（Gram / TON）或提交身材打卡后，系统通过 `userClubCard.ts` 自动与链上审核通过的名人堂数据池（`hall_of_fame_cache`）进行地址标准化比对并持久化；
    - **已入驻战神专属定向码**: 命中已入驻条目时，二维码强制定向至个人卡片 `https://raw.xiaojiucai.pro/?tab=club&cardId=${card.hash}`，扫码行动号召升华为「**掃碼圍觀我的身材SHOW**」，顶部加盖「**双开门认证战神**」荣誉徽章，系统原生分享带专属直达链接；
    - **未入驻转化漏斗**: 未入驻用户默认指向官方入口，二维码旁明确引导：“入驻名人堂解锁专属个人主页码”，深度驱动用户连接钱包与投稿；
    - **受邀围观置顶与平滑定位**: 接收者扫描带有 `cardId` 的链接进站，`DoubleDoorClub.tsx` 与 `ClubMasonryList.tsx` 毫秒级感知并将该卡片置顶至首位，点亮「**专属受邀 · 好友身材秀**」金色流光光环，并平滑自动居中滚动，自媒体跳转与打赏一键直达。
-   - **超清渲染与预载**: `html2canvas` 捕获倍率统一设置为 `scale: 3`（960px 宽度），前置等待 `document.fonts.ready`；二维码容错率锁定 `errorCorrectionLevel: 'M'`。
-   - **多小文件架构定点**: 海报语言字典独立定点于 `components/posterI18n.ts`，主组件 `WorkoutPoster.tsx`，均严格遵守 <250 行规范。
+   - **超清渲染与预载**: `html2canvas` 捕获倍率统一设置为 `scale: 2`（1440x2560 视网膜超清），前置等待 `document.fonts.ready`；二维码容错率锁定 `errorCorrectionLevel: 'M'`。
+   - **多小文件架构定点**: 海报语言字典独立定点于 `components/posterI18n.ts`，主组件 `WorkoutPoster.tsx`，海报卡片 `WorkoutPosterCard.tsx`，均严格遵守 <250 行规范。
 8. **SafeIpfsImage 原生流式加载与多网关竞速降级规范 (Safe IPFS Streaming Standard)**:
    - 严禁使用 `fetch(blob) -> URL.createObjectURL` 将多张高清大图全量读入内存（避免低端设备内存暴涨与 OOM 闪退）；
    - 强制使用原生 `<img loading="lazy" decoding="async" crossOrigin="anonymous">` 流式渲染；
@@ -167,6 +171,14 @@ curl -s http://127.0.0.1:8095/health
     - **底栏 Web3 品牌宣发**: 严格固定为「`官方链上永久存证 · 无国界0抽水社交打赏`」/ 「`ON-CHAIN PERMANENT PROOF · ZERO-FEE GLOBAL SOCIAL TIPPING`」；
     - **单行不折断与多小文件解耦**: 标题与部位标签强制 `white-space: nowrap` 消除孤字断行。海报模块严格解耦为 `WorkoutPoster.tsx`、`WorkoutPosterCard.tsx`、`PosterMuscleFigure.tsx`、`posterHelpers.ts`、`posterI18n.ts` 五个小文件，全文件均严格控制在 250 行以内。
 
+19. **小韭菜俱乐部会员卡 (clubxiaojiucai) 跨 DApp 鉴权与 Cloudflare Pages 构建规范**:
+    - **合约主键与全生态通用**: 主网合约定点为 `EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm`，持有此 NFT 的钱包地址在全矩阵 DApp（运势历 `obs`、细狗 `raw`、主站）均自动激活尊贵会员与防转移失活（Revoke-on-Transfer）；
+    - **TonConnect 2.0 验签铁律**: 杜绝 `signature.length === 64` 假验签放行；消息摘要必须加盐 `0xffff ++ 'ton-connect'` 进行双轮 sha256 计算，并通过 `nacl.sign.detached.verify` 结合 Ed25519 公钥严谨核验；
+    - **TMA 外部钱包穿透与无感签名**: Telegram Mini App 环境下初始化 TonConnect 必须始终包含 `{ tonProof: nonce }`，彻底解决外部钱包无法弹窗签名、管理员陷入只读锁死的隐蔽缺陷；
+    - **Cloudflare Pages CI/CD Node 20 编译基线**: 工程采用 Tailwind CSS v4 与 Vite 6，根目录必须强制包含 `.nvmrc` 和 `.node-version` 锁定 `20.18.0`，杜绝远端构建容器使用 Node 18 导致的语法解析崩溃。
+
 ## 详细知识库定点
 - 参考规范文档: `/home/a/wiki/skills/dapp_keeper.md`
+- 俱乐部白皮书: `/Users/hi/niuma/wiki/小韭菜俱乐部会员卡全栈架构与产品白皮书.md`
+
 

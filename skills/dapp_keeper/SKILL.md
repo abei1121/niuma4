@@ -36,6 +36,8 @@ triggers:
 4. **移动双端防误退保护**: 目标平台为 iOS PWA 与 Android 带壳（Capacitor）。弹窗全面接入 `window.history.pushState` 与 `popstate` 看门狗，拦截 Android 侧滑与物理返回键，确保关闭弹窗而非退出 App。
 5. **低端移动硬件零额外负担规范 (Low-End Mobile Zero-Overhead Standard)**: 严禁引入手机振动（navigator.vibrate/haptics）、全局音效或复杂的重度 CSS 动效；严格保障百元机、低端安卓机与老年机长时间连续动作训练无卡顿、无发热、零掉帧。
 6. **多层顶层弹窗独立解耦与防竞态规范 (Modal Anti-Race Condition Standard)**: 全局顶层弹窗（如 VipModal、ContactModal 等）必须平级独立挂载于根组件受控状态，严禁通过嵌套触发多次 `window.history.back()` 引起 popstate 事件竞态而导致目标弹窗闪退。
+7. **NFT 动态验权与打赏通道闭环规范 (On-Chain NFT Tip Gating Standard)**: 粉丝打赏入口（Feed 卡片、Lightbox 全屏大图、TipModal 弹窗转账）必须三位一体严格绑定创作者地址在链上持有 Club Pass NFT 的状态，严禁绕过持仓直接显示打赏；地址查询统一使用 `normalizeTonAddress` 转为小写 Raw Hex (`0:xxx`)，实行正向 7 天、负向 10 分钟双层冷热缓存及 In-flight 并发去重。
+8. **移动端离屏海报与内存对象安全规范 (Mobile Canvas & Memory Safety Standard)**: 2K 海报离屏渲染 DOM 必须置于视口内不可见层 (`left: 0, top: 0, opacity: 0.01, zIndex: -100`)，严禁置于 `-9999px` 导致 WebKit 裁剪黑屏；`URL.createObjectURL` 必须在选图替换、提交完成与组件卸载时成对调用 `URL.revokeObjectURL` 释放内存。
 
 ## 核心操作 SOP
 
@@ -45,21 +47,19 @@ triggers:
 ```
 探测项覆盖：TON 主网区块高度与延迟、Pinata 专有 IPFS 网关鉴权、XGBot 微服务 HTTP 心跳与内存监控、Nginx 8080/80 站点响应。
 
-### 2. 细狗前端增量编译与跨机原子发布 (Mac M2 极速构建 -> J3710 生产推流)
-【J3710 算力零消耗铁律】：J3710 (牛马2号) 是 6W 弱电 CPU，**绝对严禁在 J3710 上直接执行 `npm run build`**！
-所有前端构建必须在 Mac mini M2 本地执行标准化发布流水线：
+### 2. 细狗前端全球发布与审核微服务架构 (Cloudflare Pages + J3710 专线)
+- **前端托管**: 全量托管于 Cloudflare Pages（全球 Anycast CDN 秒开，99.99% 金融级容灾），Mac 本地执行 `git push origin main` 即可触发云端自动化 15 秒编译上线。
+- **发布脚本**:
 ```bash
 # 在 Mac mini M2 本地执行
 cd /Users/hi/niuma/projects/rawxiaojiucai
 ./deploy.sh "commit 提交信息"
 ```
 执行链路：
-- Mac M2 本地极速构建（`npm run build`，耗时约 3 秒，彻底解放 J3710 算力）；
-- 自动双重预压缩：`brotli -q 9` 与 `gzip -9` 生成 `.br` 与 `.gz` 产物；
+- Mac M2 本地快速语法与构建预校验；
 - Git 自动提交并推送到 GitHub 远端；
-- SSH 远程触发 J3710 (`192.168.1.182`) `/home/a/dapp/rawxiaojiucai` 执行 `git pull`；
-- `rsync -avz --delete dist/` 零编译原子推流预压缩产物至生产机；
-- 远程执行 `sudo nginx -t && sudo systemctl reload nginx` 完成无感平滑上线。
+- Cloudflare Pages 自动感知并完成云端零延迟发布；
+- **审核通道**: 182 仅需常驻 `dapp_xgbot.service` (8095 端口)，通过 Cloudflare Zero Trust Tunnel 专有主机名 `xgapi.xiaojiucai.pro` 接收 25MB 体态照大图并联动 Telegram 审核。免除 182 前端静态托管与频繁 rsync。
 
 ### 3. XGBot 本地微服务排查与维护
 ```bash

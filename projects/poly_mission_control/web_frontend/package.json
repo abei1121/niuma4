@@ -4,10 +4,14 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "watch": "vite build --watch",
     "build": "tsc && vite build"
   },
   "dependencies": {
     "@xyflow/react": "^12.11.6",
+    "iztro": "^2.6.1",
+    "lunar-javascript": "^1.7.7",
     "preact": "^10.20.0"
   },
   "devDependencies": {

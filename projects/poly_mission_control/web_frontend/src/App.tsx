@@ -2,6 +2,7 @@ import { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
 import { Navbar } from './components/Navbar';
 import { TabVideoStudio } from './components/TabVideoStudio';
+import { TabZiweiDeduction } from './components/TabZiweiDeduction';
 import { TabMediaLibrary } from './components/TabMediaLibrary';
 import { TabGeminiAccounts } from './components/TabGeminiAccounts';
 import { TabSubagents } from './components/TabSubagents';
@@ -24,6 +25,7 @@ export const App: FunctionalComponent = () => {
       <main className="flex-1 px-6 py-6 w-full max-w-[1920px] mx-auto">
         <ErrorBoundary key={activeTab} activeKey={activeTab} fallbackTitle="当前页面加载异常">
           {activeTab === 'video-studio' && <TabVideoStudio />}
+          {activeTab === 'ziwei-deduction' && <TabZiweiDeduction />}
           {activeTab === 'media-library' && <TabMediaLibrary />}
           {activeTab === 'gemini' && <TabGeminiAccounts />}
           {activeTab === 'subagents' && <TabSubagents />}

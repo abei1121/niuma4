@@ -28,16 +28,19 @@ FullStack Bug Hunter 是面向现代高可用 Web3、移动端 WebApp/PWA 与微
   - `RULE-W3-02`: TON/加密货币原始字符串地址 `===` 直接比对陷阱
   - `RULE-W3-03`: 用户打赏/转账目标地址硬编码 `bounceable: true` 导致未初始化新钱包资金回弹
   - `RULE-W3-04`: TonConnect 2.0 签名验签摘要构造与 `'ton-safe-sign-magic'` 混用及伪签名放行漏洞
+  - `RULE-W3-05`: 变量未经 try/catch 强转 `BigInt()` 遭遇非数字字符串导致运行时崩溃
   - `RULE-MOB-01`: iOS Safari/WebKit 异步 `await` 导致剪贴板用户手势凭据失效
   - `RULE-MOB-02`: 移动端 WebView/Telegram 环境直调非 Universal 自定义协议导致白屏崩溃
   - `RULE-MOB-03`: 原生 `alert()`/`confirm()` 阻塞事件循环与冻结主线程
-  - `RULE-MOB-04`: Telegram TMA 环境 TonProof 丢失或假签名导致管理权锁死与只读降级
+  - `RULE-MOB-04`: 粗暴使用 `document.body.style.touchAction = 'none'` 导致移动端手势死锁
+  - `RULE-MOB-05`: 离屏生成海报时元素置于 `-9999px` 遭遇 WebKit 视口裁剪导致黑屏/空白画布
+  - `RULE-MOB-06`: 未受控调用 `URL.createObjectURL` 且缺少 `URL.revokeObjectURL` 导致的内存泄漏
   - `RULE-CI-01`: Cloudflare Pages / Vercel Tailwind v4 构建缺少 `.nvmrc` Node 20 锁文件
   - `RULE-RCT-01`: 动态可变/可排序列表使用 `key={index}` 导致虚拟 DOM 复用错乱
   - `RULE-RCT-02`: 未经 DOMPurify 脱敏的 `dangerouslySetInnerHTML` XSS 注入
   - `RULE-RCT-03`: 弹窗未受控挂载 `history.pushState` 导致的物理返回键死锁
   - `RULE-RCT-04`: `useEffect` 内监听器或定时器缺少 `return` 清理导致的内存泄露
-  - `RULE-RCT-05`: 轮询 Hook 依赖项闭包未用 `useCallback` 稳定引用导致的高频重绘死循环
+  - `RULE-RCT-05`: 表单编辑态数组过滤导致的下拉选择框槽位塌缩错位 (Array Shift Glitch)
   - `RULE-ARCH-01`: 单文件超出 250 行阈值违规（小文件单一职责标准）
 
 ### 2. 专项缺陷排查参考矩阵 (Progressive Disclosure)
@@ -66,7 +69,10 @@ python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py /Us
 3. **地址相等性比对**:
    - 严禁对两串字符串地址直接使用 `===`，必须使用统一的 `isAddressEqual(addrA, addrB)` 处理 Hex、EQ、UQ 互通；
 4. **TEP-64 备注与 Payload 格式**:
-   - 链上转账带有用户备注时，前 32 位必须显式补 0 (`storeUint(0, 32)`)。
+   - 链上转账带有用户备注时，前 32 位必须显式补 0 (`storeUint(0, 32)`)；
+5. **NFT 持仓动态验权与打赏通道三位一体防击穿标准**:
+   - 打赏通道展示必须严格绑定目标地址链上 NFT 持仓状态。全网瀑布流卡片、点击放大灯箱浮层（Lightbox）与打赏弹窗本体（Modal）必须三位一体联合管控，严禁在灯箱浮层无脑暴露打赏按钮；
+   - 链上地址统一采用小写 Raw Hex (`0:xxx`) 归一化作为唯一缓存 Key，配合正向 7 天、负向 10 分钟的冷热缓存和 In-flight 去重机制。
 
 ### 阶段三：移动端 WebView、Safari 与 PWA 沙箱核查 (Mobile Sandbox Audit)
 1. **剪贴板用户手势生命周期**:
@@ -75,11 +81,15 @@ python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py /Us
    - 严禁使用 `window.location.href = 'xxx://'` 强制跳转；必须优先采用 Universal Links，或封装安全沙箱跳出函数（通过隐藏 iframe 或在 Telegram 中调用 `window.Telegram.WebApp.openLink`）；
 3. **消除阻塞式原生弹窗**:
    - 彻底清除所有 `alert()`、`confirm()`、`prompt()`，换用非阻塞 React 模态框或 Toast；
-4. **低端移动硬件零额外负担**:
-   - 杜绝非用户明确开启的重度 CSS 动画、`navigator.vibrate` 震动与全局常驻音频解码。
+4. **离屏画布生成与视口裁剪防黑屏**:
+   - 海报截图 DOM 严禁置于 `-9999px`，必须置于视口内不可见层 (`left: 0, top: 0, opacity: 0.01, zIndex: -100`)，防止 WebKit 裁剪合成层导致生成黑屏/空白画布；
+5. **内存泄漏与对象 URL 规范**:
+   - 只要使用 `URL.createObjectURL` 生成预览图，必须在重新选图、提交完成以及组件卸载生命周期内成对调用 `URL.revokeObjectURL`，杜绝移动端 OOM 崩溃。
 
 ### 阶段四：React 状态机、多层弹窗与并发竞态核查 (State & Concurrency Audit)
-1. **模态框平级解耦与防穿透**:
+1. **编辑态槽位防塌缩错位 (Slot Anti-Shift)**:
+   - 表单多项配置（如多下拉框部位设定）在编辑态严禁直接调用 `filter` 剔除空值导致数组长度缩短和槽位塌缩错位，必须保持槽位索引绝对稳定，仅在保存时清洗；
+2. **模态框平级解耦与防穿透**:
    - 顶级弹窗必须平级受控挂载于根节点，子组件按钮必须阻止事件冒泡 (`e.stopPropagation()`)，防止点击卡片与点击操作按钮引发弹窗重叠冲突；
 2. **History 栈与返回键看门狗**:
    - 弹窗接入 `history.pushState` 必须有成对的 `popstate` 监听，组件卸载时必须安全回收标记，杜绝物理返回键造成应用卡死；

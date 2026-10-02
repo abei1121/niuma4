@@ -11,6 +11,7 @@ export const Navbar: FunctionalComponent<NavbarProps> = ({
 }) => {
   const tabs = [
     { id: 'video-studio', label: '视频剪辑中枢' },
+    { id: 'ziwei-deduction', label: '紫微推演' },
     { id: 'media-library', label: '媒体资产库' },
     { id: 'gemini', label: '大模型矩阵' },
     { id: 'subagents', label: '特战子代理' },

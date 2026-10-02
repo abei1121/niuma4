@@ -91,6 +91,20 @@ RULES = [
         "severity": "HIGH",
         "pattern": r"document\.body\.style\.touchAction\s*=",
         "message": "Setting touchAction='none' breaks WebKit/iOS gesture tracking and can lock page scroll. Use overflow='hidden'."
+    },
+    {
+        "id": "RULE-MOB-05",
+        "name": "Offscreen Viewport Culling Trap (-9999px)",
+        "severity": "HIGH",
+        "pattern": r"-(?:9999|99999)px",
+        "message": "Placing elements at -9999px causes WebKit/Safari viewport culling, resulting in blank/black canvas poster captures. Use bounded layer (top:0, left:0, opacity:0.01, zIndex:-100)."
+    },
+    {
+        "id": "RULE-W3-05",
+        "name": "Unguarded Raw BigInt Variable Cast",
+        "severity": "HIGH",
+        "pattern": r"\bconst\s+\w+\s*=\s*BigInt\s*\(\s*(?!\d+n?|['\"][0-9]+['\"])[a-zA-Z0-9_\.]+\s*\)",
+        "message": "Converting variables via BigInt() without try/catch or format check throws SyntaxError on non-numeric strings, crashing the feed."
     }
 ]
 
@@ -142,6 +156,17 @@ def scan_file(file_path, max_lines, enforce_file_size=True):
                 "message": "Timer or event listener created without returning cleanup function, causing memory leaks.",
                 "snippet": lines[line_no - 1].strip() if line_no <= len(lines) else ""
             })
+
+    # Rule: Missing URL.revokeObjectURL
+    if "createObjectURL" in full_content and "revokeObjectURL" not in full_content:
+        findings.append({
+            "line": 1,
+            "id": "RULE-MOB-06",
+            "severity": "HIGH",
+            "name": "Unrevoked URL.createObjectURL Memory Leak",
+            "message": "File creates Blob URLs with createObjectURL() but never calls revokeObjectURL(), causing bitmap memory leaks in mobile WebKit.",
+            "snippet": "createObjectURL without revokeObjectURL"
+        })
 
     return findings
 

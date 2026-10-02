@@ -1,0 +1,198 @@
+// web_frontend/src/components/ziwei/patternRegistryAuspicious.ts - 32 Auspicious Patterns (<= 250 lines)
+// Strictly <= 250 lines. Zero Emoji. Zero Star icons.
+import { AstrolabePatternDef } from './patternTypes';
+
+export const AUSPICIOUS_PATTERNS: Record<string, AstrolabePatternDef> = {
+  SAN_QI_JIA_HUI: {
+    id: 'SAN_QI_JIA_HUI', name: '三奇嘉會格', type: 'auspicious',
+    brief: '化祿、化權、化科齊會命宮三方四正',
+    description: '生年三奇同會，才智兼備，名重四海，極利階層躍升與全局開創。',
+    action: '宜主動破圈擴張，順應大勢借力，但需防大運逢忌衝破時戰線過長。',
+  },
+  HUO_TAN: {
+    id: 'HUO_TAN', name: '火貪格', type: 'auspicious',
+    brief: '貪狼與火星同宮或三方拱照',
+    description: '主爆發、突進、奇襲得財，具備極強的逆境翻盤與商業敏銳度。',
+    action: '宜抓住突發機遇果斷落袋，切忌盲目戀戰與過度加槓桿。',
+  },
+  LING_TAN: {
+    id: 'LING_TAN', name: '鈴貪格', type: 'auspicious',
+    brief: '貪狼與鈴星同宮或三方拱照',
+    description: '主暗發、偏財蓄積、悶聲發財，行動縝密且具深層謀略。',
+    action: '低調潛伏蓄力，在特定賽道深耕厚積薄發，嚴防名利之爭。',
+  },
+  RI_YUE_BING_MING: {
+    id: 'RI_YUE_BING_MING', name: '日月並明格', type: 'auspicious',
+    brief: '太陽在巳午、太陰在酉戌皆廟旺會照命宮',
+    description: '心地光明磊落，貴人提攜，早年即展露頭角，富貴雙全之格。',
+    action: '宜走正道、立名聲，以公信力與專業權威為立身之本。',
+  },
+  RI_ZHAO_LEI_MEN: {
+    id: 'RI_ZHAO_LEI_MEN', name: '日照雷門格', type: 'auspicious',
+    brief: '太陽在卯宮坐命',
+    description: '旭日初升，前程萬里，志向遠大，利於文教、公門與知名品牌。',
+    action: '宜早期主動爭取曝光與話語權，但需收斂鋒芒防招同儕嫉恨。',
+  },
+  YUE_LANG_TIAN_MEN: {
+    id: 'YUE_LANG_TIAN_MEN', name: '月朗天門格', type: 'auspicious',
+    brief: '太陰在亥宮坐命',
+    description: '太陰廟旺，心思細膩縝密，長於謀略企劃、藝術品味與高維諮詢。',
+    action: '宜以智慧與幕僚思維賦能他人，善用直覺與審美創造長期溢價。',
+  },
+  JU_RI_TONG_GONG: {
+    id: 'JU_RI_TONG_GONG', name: '巨日同宮格', type: 'auspicious',
+    brief: '太陽、巨門同在寅宮或申宮守命',
+    description: '口才絕倫，思辨敏捷，利於涉外傳播、跨國貿易、法務訴訟與公共傳播。',
+    action: '宜以專業知識為錨點開拓海外或跨界市場，防口舌是非與意氣用事。',
+  },
+  SHI_ZHONG_YIN_YU: {
+    id: 'SHI_ZHONG_YIN_YU', name: '石中隱玉格', type: 'auspicious',
+    brief: '巨門在子午坐命，三方見祿權科或祿存',
+    description: '大器晚成，早年需經艱苦磨礪方顯璀璨光彩，厚積薄發型典範。',
+    action: '早年耐住寂寞打磨硬核技術，中年順勢而為，戒驕戒躁防遭人嫉。',
+  },
+  YANG_LIANG_CHANG_LU: {
+    id: 'YANG_LIANG_CHANG_LU', name: '陽梁昌祿格', type: 'auspicious',
+    brief: '太陽、天梁、文昌、祿存(或化祿)齊會三方四正',
+    description: '考運與功名亨通，國家級牌照、法定資格與嚴肅學術考核無往不利。',
+    action: '主攻嚴格准入之特許行業或體制內晉升，以專業壁壘構建競爭優勢。',
+  },
+  LU_MA_JIAO_CHI: {
+    id: 'LU_MA_JIAO_CHI', name: '祿馬交馳格', type: 'auspicious',
+    brief: '祿存(或化祿)與天馬同宮或三方拱照',
+    description: '奔波生財，越動越發，利於跨境貿易、遠途商務、物流流通與資產出海。',
+    action: '主動向外部流動性要收益，建立跨地域業務佈局，忌固守一隅。',
+  },
+  ZI_FU_TONG_GONG: {
+    id: 'ZI_FU_TONG_GONG', name: '紫府同宮格', type: 'auspicious',
+    brief: '紫微、天府同在寅宮或申宮守命',
+    description: '帝王與財庫並立，福壽兼得，聲譽尊榮，具備大型組織統轄能力。',
+    action: '宜從事大平台治理或長期資產沉澱，決策需果決以防紫府互掣。',
+  },
+  JI_XIANG_LI_MING: {
+    id: 'JI_XIANG_LI_MING', name: '極向離明格', type: 'auspicious',
+    brief: '紫微在午宮獨坐守命，無煞曜破格',
+    description: '君臨天下，氣魄宏偉，領導力出眾，適合最高決策者或核心主帥角色。',
+    action: '重視團隊授權與制度建設，求賢若渴建立智囊團，防獨斷專行。',
+  },
+  QI_SHA_CHAO_DOU: {
+    id: 'QI_SHA_CHAO_DOU', name: '七殺朝鬥格', type: 'auspicious',
+    brief: '七殺在子午或寅申獨坐守命',
+    description: '威鎮邊疆，大將之風，極強的拓荒魄力與戰鬥意志，克敵制勝。',
+    action: '主動擔綱開拓性、破冰性硬仗，設立清晰止損線防冒進遇伏。',
+  },
+  WU_TAN_TONG_XING: {
+    id: 'WU_TAN_TONG_XING', name: '武貪同行格', type: 'auspicious',
+    brief: '武曲貪狼同在丑宮或未宮守命',
+    description: '先苦後甜，早年艱辛積澱，三十歲後憑藉硬核商業嗅覺與金融手腕爆發。',
+    action: '早年深耕供應鏈與技術底層，三十歲後隨大限運化果斷開拓獨立盤口。',
+  },
+  FU_XIANG_CHAO_YUAN: {
+    id: 'FU_XIANG_CHAO_YUAN', name: '府相朝垣格', type: 'auspicious',
+    brief: '天府天相在三方四正拱照命宮',
+    description: '衣食豐厚，人脈庇護，長輩貴人提攜，事業平穩少大起大落。',
+    action: '在穩健基本盤上提拔激進先鋒團隊佈局前沿，平衡守成與創新。',
+  },
+  JI_LIANG_JIA_HUI: {
+    id: 'JI_LIANG_JIA_HUI', name: '機梁加會格', type: 'auspicious',
+    brief: '天機天梁同在辰戌宮坐命',
+    description: '神機妙算，辯才無礙，擅長頂層戰略架構、高級智囊謀略與組織諮詢。',
+    action: '恪守誠信，緊密配合強執行力團隊落地，防空談而陷紙上談兵。',
+  },
+  CHANG_QU_TONG_GONG: {
+    id: 'CHANG_QU_TONG_GONG', name: '昌曲同宮格', type: 'auspicious',
+    brief: '文昌文曲同在丑宮或未宮守命或拱命',
+    description: '才華橫溢，文墨冠世，在文化傳媒、自媒體IP、知識體系化上天賦出眾。',
+    action: '聘請專業法務與商業合夥人對接市場，將文化創作沉澱為專利與版權。',
+  },
+  FU_BI_GONG_MING: {
+    id: 'FU_BI_GONG_MING', name: '輔弼拱命格', type: 'auspicious',
+    brief: '左輔右弼在命宮三方四正或鄰宮拱夾',
+    description: '一生貴人助力極多，深得團隊人心與領導器重，多兵種協同作戰天花板。',
+    action: '平時廣結善緣分權授信，重大戰略關口保持主帥決斷魄力定盤。',
+  },
+  SHOU_XING_RU_MIAO: {
+    id: 'SHOU_XING_RU_MIAO', name: '壽星入廟格', type: 'auspicious',
+    brief: '天梁在午宮或子宮廟旺獨坐守命',
+    description: '為人正派公允，天生具備監察審計力，利司法紀檢、行業公斷與醫療教育。',
+    action: '守住程序正義與專業審計底線，處事留有餘地，方能德高望重立名。',
+  },
+  QUAN_LU_XUN_FENG: {
+    id: 'QUAN_LU_XUN_FENG', name: '權祿巡逢格', type: 'auspicious',
+    brief: '生年化祿與化權同在命宮或三方交會',
+    description: '開拓實幹與財富變現完美融合，有權有財，具備頂級企業家風範。',
+    action: '構建現代企業制度與職業經理人梯隊，隨宏觀週期主動切換攻守。',
+  },
+  SHUANG_LU_CHAO_YUAN: {
+    id: 'SHUANG_LU_CHAO_YUAN', name: '雙祿朝垣格', type: 'auspicious',
+    brief: '祿存與化祿齊在命宮三方四正拱會',
+    description: '正偏財俱旺，流動資金充沛，在資產投資與商業運籌上具備天然吸金體質。',
+    action: '做好家族信托與資產隔離，生活保持低調，定期回饋社會平衡財氣。',
+  },
+  YUAN_YANG_LU: {
+    id: 'YUAN_YANG_LU', name: '鴛鴦化祿格', type: 'auspicious',
+    brief: '夫妻宮與官祿宮對宮互相化祿，或雙祿交馳交疊',
+    description: '夫官線對宮雙向飛化祿，主夫妻互為貴人，因婚戀或事業夥伴大發，富貴綿長。',
+    action: '善待伴侶，注重利益共享與夫妻協同，重大商業投資多聽取伴侶直覺。',
+  },
+  MING_ZHU_CHU_HAI: {
+    id: 'MING_ZHU_CHU_HAI', name: '明珠出海格', type: 'auspicious',
+    brief: '命在丑未無主星，日卯月亥並明會照命宮',
+    description: '潛龍出淵，早年歷經淬鍊，青年後如明珠升騰出海，名聲大噪震驚四方。',
+    action: '抓住早期崛起紅利積累核心資產，戒除浮誇心態，厚植實體護城河。',
+  },
+  JUN_CHEN_QING_HUI: {
+    id: 'JUN_CHEN_QING_HUI', name: '君臣慶會格', type: 'auspicious',
+    brief: '紫微坐命，輔弼魁鉞昌曲諸吉四面齊會',
+    description: '眾星拱極，群賢畢集，適合超大型組織主帥、行業領袖與生態型平台開創者。',
+    action: '建立現代制度化授權機制，以宏大願景凝聚人才，防官僚作風遮蔽視線。',
+  },
+  TIAN_YI_GONG_MING: {
+    id: 'TIAN_YI_GONG_MING', name: '天乙拱命格', type: 'auspicious',
+    brief: '天魁天鉞在命宮三方四正或命身拱照',
+    description: '天生自帶超強貴人護體，逢凶化吉，關鍵轉折關頭總有高層貴人引薦提攜。',
+    action: '知恩圖報建立利益反哺閉環，將長輩賞識化為自身硬實力，防依賴惰性。',
+  },
+  DAN_CHI_GUI_CHI: {
+    id: 'DAN_CHI_GUI_CHI', name: '丹墀桂墀格', type: 'auspicious',
+    brief: '太陽在巳宮(丹墀)或太陰在酉宮(桂墀)守命',
+    description: '少年早遂青雲之志，貴氣天成，利外事公關、上市公司高管與權威代表。',
+    action: '珍惜早期聲譽羽毛，堅持合規透明，在事業巔峰期建立自主防禦底倉。',
+  },
+  JU_JI_TONG_LIN: {
+    id: 'JU_JI_TONG_LIN', name: '巨機同臨格', type: 'auspicious',
+    brief: '巨門天機同在卯宮或酉宮坐命',
+    description: '機變百出，先破後立，長於敏捷商業創新、新興賽道破局與重大商業談判。',
+    action: '克服心浮氣躁換賽道過頻短板，鎖定單一優勢複利深耕，以專業立威。',
+  },
+  KE_MING_HUI_LU: {
+    id: 'KE_MING_HUI_LU', name: '科名會祿格', type: 'auspicious',
+    brief: '化科在命宮，三方見化祿或祿存拱會',
+    description: '名利雙收，才華高效變現，頂級技術專家、高客單諮詢顧問與知識IP典範。',
+    action: '堅守專業交付底線，以口碑驅動自然增長，防短視資本破壞學術聲譽。',
+  },
+  WEN_XING_AN_GONG: {
+    id: 'WEN_XING_AN_GONG', name: '文星暗拱格', type: 'auspicious',
+    brief: '命宮吉星坐守，文昌文曲在暗合宮或三方暗拱',
+    description: '儒雅內秀，深謀遠慮，隱形技術專家、頂級幕僚軍師與高階策劃推手。',
+    action: '事前落實合規署名權與收益分成協議，將智力成果固化為法律資產。',
+  },
+  LU_HE_YUAN_YANG: {
+    id: 'LU_HE_YUAN_YANG', name: '祿合鴛鴦格', type: 'auspicious',
+    brief: '祿存與化祿同守命宮(雙祿守命)',
+    description: '財庫豐饒，天生吸金，適合大宗商品、資本運作與頂層家族資金管理。',
+    action: '羊陀夾命宜低調行事，財不露白，定期做慈善或社會公益平衡氣場。',
+  },
+  JIA_TIAN_CHENG_SHENG: {
+    id: 'JIA_TIAN_CHENG_SHENG', name: '甲第登庸格', type: 'auspicious',
+    brief: '化科在命宮，三方見昌曲魁鉞吉曜',
+    description: '考場折桂，拔萃超群，國際頂尖特許牌照、大考大選與嚴肅評級通達。',
+    action: '以權威資格構建准入門檻，實戰中主動融入一線業務，打通產學研鏈條。',
+  },
+  GUI_XING_GAO_ZHAO: {
+    id: 'GUI_XING_GAO_ZHAO', name: '貴星高照格', type: 'auspicious',
+    brief: '紫微天府守命，三方吉曜重重拱會',
+    description: '基業長青，百業亨通，家族實業控股、大型基業永續發展之定海神針。',
+    action: '健全現代企業治理章程，防止二代守成倦怠，持續引入新鮮血液激活組織。',
+  },
+};

@@ -233,3 +233,24 @@ ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 # 2. 调用 Telegram 专用推流工具秒级推送至命主手机
 /Users/hi/niuma/bin/tg_send_file "/path/to/poster.png" "战报海报视觉走查"
 ```
+
+---
+
+## 五、 Web3 动态验权、打赏闭环与移动端沙箱工程规范 (Web3 & Mobile Engineering Standards)
+
+### 1. NFT 持仓动态验权与打赏通道三位一体闭环 (Triple-Gate Tip Protection)
+* **业务铁律**：全网展示中，创作者卡片上的“打赏”按钮（Tip Button）严格且唯一根据该创作者绑定的钱包地址在链上是否持有 **Club Pass NFT** (`EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm`) 来动态激活。
+* **三位一体严密管控**：
+  1. **瀑布流卡片 (`FeedItem.tsx`)**：仅当卡片滚动进入可视区域（IntersectionObserver）且链上检测持仓 NFT 时，才挂载金色打赏胶囊；
+  2. **大图浮层灯箱 (`ClubLightbox.tsx`)**：点击大图展开时，**严禁无条件暴露打赏**，必须通过 `useAddressVipStatus` 校验 `isVip === true`，否则完全隐藏打赏按钮与打赏留言跑马灯；
+  3. **打赏弹窗二次深度防御 (`TipModal.tsx`)**：若有绕过 UI 直接触发弹窗的异常行为，弹窗内部二次验证，未激活者强制展示警示条并禁用转账按钮，彻底锁死资产与权益边界。
+* **统一地址归一化与冷热分级缓存 (`services/membershipService.ts`)**：
+  - 无论传入 `EQ`、`UQ` 还是 `0:`，统一通过 `normalizeTonAddress` 转为小写 Raw Hex (`0:xxx`) 作为唯一缓存与查询 Key；
+  - 正向持仓（`isVip: true`）缓存 7 天；负向未持仓（`isVip: false`）缓存 10 分钟（让刚购买 NFT 的创作者尽快生效）；
+  - In-flight Promise 并发去重，杜绝瀑布流同时触发重复的 TonAPI 请求。
+
+### 2. 移动端 WebKit 离屏渲染与内存沙箱法则 (WebKit Offscreen & Memory Safety)
+* **严禁 `-9999px` 离屏定位**：iOS Safari / Telegram WebView 在视口裁剪优化下，对 `-9999px` 的超远 DOM 会剔除渲染管线，导致 `html2canvas` 导出纯黑/空白海报。必须置于视口内不可见层 (`position: fixed, left: 0, top: 0, opacity: 0.01, zIndex: -100`)。
+* **Blob URL 内存成对销毁**：使用 `URL.createObjectURL` 预览身材照时，必须在重新选图、提交成功与组件卸载生命周期成对执行 `URL.revokeObjectURL`，避免大图内存堆积引发移动端 WebView 闪退。
+* **编辑态槽位防塌缩错位**：多下拉框计划管理器在编辑态严禁直接 `filter(p => p !== 'None')` 导致数组长度收缩，必须保持槽位绝对固定，仅在最终保存时执行清洗。
+* **BigInt 运算异常防御**：对外部数据（如 Hash、时间戳等）使用 `BigInt()` 转换必须包裹 `try-catch`，防范非十进制字符串抛出 `SyntaxError` 击垮全局视图。

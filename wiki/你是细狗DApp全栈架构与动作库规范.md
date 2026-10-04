@@ -70,8 +70,8 @@
    - **帕洛夫抗旋转推 (Pallof Press)**：侧对绳索向胸前平推，身体静止抵抗侧向扭转，骨盆腰椎零剪切力的防伤深层核心动作。
    - **古典真空腹内缩 (Stomach Vacuum)**：排空肺部强力抽吸肚脐贴向脊柱，直接激活深层腹横肌，打造古典健美极致窄腰。
 
-### 3. 全球化 8 语种字典无缝覆盖
-每个动作必须完整配置 8 国语言字典：
+### 3. 全球化 12 语种矩阵与 100% 双向对齐规范 (12-Language Global Matrix Canon)
+系统与动作库完整接入 12 种主流国家与地区语言：
 - 简体中文 (`Language.ZH_CN`)
 - 繁体中文 (`Language.ZH_TW`)
 - 英文 (`Language.EN`)
@@ -80,6 +80,17 @@
 - 俄文 (`Language.RU`)
 - 港澳粤语 (`Language.ZH_HK`)
 - 越南语 (`Language.VI`)
+- 西班牙语 (`Language.ES`)
+- 葡萄牙语 (`Language.PT`)
+- 法语 (`Language.FR`)
+- 印尼语 (`Language.ID`)
+
+* **100% 双向对齐严苛测试标准 (`npm run test:i18n`)**：
+  - 基准 206 个国际化词条全量覆盖；
+  - 自动化测试脚本遍历所有 12 国语言字典文件（`src/i18n/locales/*.ts`），双向比对验证零多余孤立键、零缺失翻译键，彻底消灭渲染 undefined 导致的空白异常。
+* **Header 国际化品牌差异化定调**：
+  - **中文语系 (`zh_cn`, `zh_tw`, `zh_hk`)**：采用中英双行品牌标识（“你是细狗 / 你是細狗” + “YOU ARE SCRAWNY”）；
+  - **其余 9 大国际语种 (`en`, `ja`, `ko`, `ru`, `vi`, `es`, `pt`, `fr`, `id`)**：统一仅展示高品质英文品牌名称（“YOU ARE SCRAWNY”），消除海外非中文用户的认知壁垒，提升全球化品牌质感。
 
 ### 4. 动态部位关键词自媒体精准教学跳出铁律 (Body Part Search Prefix Law)
 * **痛点**：若仅用动作名称搜索，易搜索出同名歌曲、影视角色或模糊视频。
@@ -187,14 +198,14 @@ ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 
 ---
 
-## 七、 2K Retina 战神战报海报与 8 国语言裂变矩阵架构 (2K Retina Poster Canon)
+## 七、 2K Retina 战神战报海报与 12 国语言裂变矩阵架构 (2K Retina Poster Canon)
 
 ### 1. 社交裂变超大字体与视觉冲击力
 * **移动端开图秒读**：彻底消灭移动端小字体。吞铁做功与连击数据采用 **52px Oswald 巨型数字**，战力评级 38px，主标题 30px，徽标 16px，二维码 110px 配合 3px 琥珀金立体外框。
 * **单行不折断**：核心战斗标题与部位标签强制执行 `white-space: nowrap; flex-shrink: 0;`，彻底消除由于文字过长导致的尴尬孤字换行。
 
-### 2. 100% 纯净语言单轨隔离 (Pure 8-Language Matrix)
-* 支持中简 (`ZH_CN`)、中繁 (`ZH_TW`)、中港 (`ZH_HK`)、英 (`EN`)、日 (`JA`)、韩 (`KO`)、俄 (`RU`)、越 (`VI`) 共 8 种语言。
+### 2. 100% 纯净语言单轨隔离 (Pure 12-Language Matrix)
+* 支持中简 (`ZH_CN`)、中繁 (`ZH_TW`)、中港 (`ZH_HK`)、英 (`EN`)、日 (`JA`)、韩 (`KO`)、俄 (`RU`)、越 (`VI`)、西 (`ES`)、葡 (`PT`)、法 (`FR`)、印尼 (`ID`) 共 12 种语言。
 * 彻底实现 100% 纯净语言单轨隔离：选英文时全英文，选中文时全中文，绝不夹杂中英文混排。
 
 ### 3. 动态部位感知与解剖图发光联动 (Dynamic Anatomical Glow)
@@ -209,7 +220,7 @@ ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 * `components/WorkoutPosterCard.tsx` (149行)：720px 2K Retina 海报 DOM 纯净渲染。
 * `components/PosterMuscleFigure.tsx` (139行)：解剖学肌肉发光动态 SVG 矢量组件。
 * `components/posterHelpers.ts` (143行)：部位提取、做功吨位计算、8国语言战斗标题与文案生成。
-* `components/posterI18n.ts` (237行)：8国语言词典与本地化映射。
+* `components/posterI18n.ts` (18行 + 子模块)：12国语言海报词典与本地化映射。
 
 ### 6. 7 大肌群与有氧专属解剖发光色彩矩阵 (Anatomical Chromatic Canon)
 * **手臂 (Arms / 麒麟臂)**：双臂肱二头肌、肱三头肌与前臂肌群呈核聚变双色渐变高亮（琥珀金 `#f59e0b` ~ 爆破红 `#ef4444`），浮水印透射「麒麟臂峰爆」，副标题深度撕裂肱二三头肌纤维；
@@ -238,12 +249,20 @@ ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 
 ## 八、 Web3 动态验权、打赏闭环与移动端沙箱工程规范 (Web3 & Mobile Engineering Standards)
 
-### 1. NFT 持仓动态验权与打赏通道三位一体闭环 (Triple-Gate Tip Protection)
-* **业务铁律**：全网展示中，创作者卡片上的“打赏”按钮（Tip Button）严格且唯一根据该创作者绑定的钱包地址在链上是否持有 **Club Pass NFT**（优先检测 V2 主合约 `EQAOgV_jpZ6YK0ZypEp4oTgAa4T_QZafNN-Or0RSHs3S0Q3a`，未命中平滑回退检测 V1 历史合约 `EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm`）来动态激活。
+### 1. 双轨打赏与 80%/20% 商业分成架构 (Dual-Track Tipping & Platform Fee Split)
+* **业务铁律**：
+  1. **普通创作者（绑定收款钱包）**：无需持有 NFT，只要已绑定有效 TON 钱包，即可激活链上赞赏通道。打赏转账由底层 `tipSplitHelper.ts` 执行多跳拆分：
+     - **创作者实收 80%**：直接打入创作者收款地址；
+     - **平台生态服务费 20%**：直接打入董事长金库 `UQBbPM8jUI5deUK0ZmnBludIL1SUBPrpp6k-BSyZukUstM_j`（携带 Memo `XG:EcoFund-20%`）；
+     - 瀑布流卡片打赏按钮标注清晰的 `80%` 角标，保障财务透明与分成共识；
+  2. **Club Pass NFT 尊贵持卡者 (VIP)**：
+     - 动态检测持仓状态（优先检测 V2 主合约 `EQAOgV_jpZ6YK0ZypEp4oTgAa4T_QZafNN-Or0RSHs3S0Q3a`，未命中平滑回退检测 V1 历史合约 `EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm`）；
+     - 享 **100% 全额秒到账**（0% 平台服务费）+ 黑金流光卡片与专属认证；
+  3. **未绑定钱包的纯游客模式**：仅用于身材展示与社媒引流，前端隐去打赏按钮，绝不在无目标地址时发起无效交易。
 * **三位一体严密管控**：
-  1. **瀑布流卡片 (`FeedItem.tsx`)**：仅当卡片滚动进入可视区域（IntersectionObserver）且链上检测持仓 NFT 时，才挂载金色打赏胶囊；
-  2. **大图浮层灯箱 (`ClubLightbox.tsx`)**：点击大图展开时，**严禁无条件暴露打赏**，必须通过 `useAddressVipStatus` 校验 `isVip === true`，否则完全隐藏打赏按钮与打赏留言跑马灯；
-  3. **打赏弹窗二次深度防御 (`TipModal.tsx`)**：若有绕过 UI 直接触发弹窗的异常行为，弹窗内部二次验证，未激活者强制展示警示条并禁用转账按钮，彻底锁死资产与权益边界。
+  1. **瀑布流卡片 (`FeedItem.tsx`)**：仅当创作者具有有效地址时才挂载打赏胶囊，非 VIP 标注 `80%`，VIP 呈现尊贵高亮；
+  2. **大图浮层灯箱 (`ClubLightbox.tsx`)**：未绑定钱包创作者明确提示“仅作展示”，有钱包者提供无缝赞赏入口；
+  3. **打赏弹窗二次深度防御 (`TipModal.tsx`)**：多跳交易参数严格对齐，禁止溢出与负数计算。
 * **统一地址归一化与冷热分级缓存 (`services/membershipService.ts`)**：
   - 无论传入 `EQ`、`UQ` 还是 `0:`，统一通过 `normalizeTonAddress` 转为小写 Raw Hex (`0:xxx`) 作为唯一缓存与查询 Key；
   - 正向持仓（`isVip: true`）缓存 7 天；负向未持仓（`isVip: false`）缓存 10 分钟（让刚购买 NFT 的创作者尽快生效）；
@@ -289,3 +308,68 @@ graph LR
 ### 4. 训练卡教程与名人堂社媒双轨独立规范 (Dual-Track Independence)
 * **单卡教程**：严格遵守上述地域分流与 3 平台规则，专注即时训练纠错；
 * **双开门名人堂 (DoubleDoorClub)**：创作者 UGC 个人社交主页名片保持 100% 全球化互通（覆盖 TikTok、Instagram、YouTube、抖音、小红书、Telegram 等），绝不因训练卡语言而缩减，保障全球创作者商业曝光与跨平台引流权益。
+
+---
+
+## 十、 双通道高转化钱包引导与系统工程防御规范 (Dual-Channel Wallet & FullStack Engineering Canon)
+
+### 1. 双通道高转化钱包架构与返佣闭环 (`TonTutorialModal.tsx`)
+* **彻底剔除币安 Web3 钱包**: 
+  - 旧版本教程中包含的币安 Web3 钱包（Binance Web3 Wallet）无法统计专属引流返佣，导致高价值 Web2 独立 App 用户白白流失至无收益竞品；
+  - 现已彻底将币安钱包从全站及教程弹窗中物理拔除，消灭流量黑洞。
+* **PM 级双通道高转化漏斗**:
+  1. **通道一：Telegram 原生钱包 (`@wallet`) 0 下载秒开**
+     - 适用场景：Telegram Mini App 亿级原生用户；
+     - 核心优势：无需下载任何独立 App，0 门槛开通，直接连通 Telegram 原生生态。
+  2. **通道二：官方首推 Bitget Wallet（邮箱 MPC 极简注册 + 专属返佣）**
+     - 适用场景：独立 Web / iOS PWA / Android APK 外部用户；
+     - 核心优势：支持 Web2 邮箱与社交账号 MPC 登录，彻底打消小白用户对 24 位助记词丢失的恐惧心理；
+     - **返佣闭环**：官方链接 100% 绑定命主专属推荐邀请码（`KeNw3s` / `inviteCode=KeNw3s`），实现独立流量的深度沉淀与终身返佣变现。
+  3. **防诈安全卡片与助记词铁律**：保留防诈安全卡片与冷钱包备份指引，全教程由 3 张精简卡片组成，轮播平滑，单文件严格控制在 216 行。
+
+### 2. 移动端 History 栈防死锁与 Popstate 看门狗规范 (`App.tsx`)
+* **移动端历史栈竞态痛点**：在移动端浏览器与 Android PWA 环境中，当多个顶层模态框（如打卡弹窗、钱包教程、名人堂灯箱）交替打开时，若无脑调用 `window.history.pushState`，会导致历史栈重复入栈、产生多余假历史记录；当用户执行 Android 物理返回键或侧滑手势时，页面陷入反复关闭弹窗却退不出 App 的死锁。
+* **单状态防护守卫**：
+  ```typescript
+  if (!window.history.state?.xgAppModalOpen) {
+    window.history.pushState({ xgAppModalOpen: true }, '');
+  }
+  ```
+* 配合顶层 `window.addEventListener('popstate')` 统一派发，确保每次弹窗触发只占用单层历史步长，物理返回键能平滑、精准地按顺序关闭模态框。
+
+### 3. 社交调度单一职责与 Rule 17 严格解耦 (Creator Social Launcher Modularization)
+* **小文件单一职责法则**：为坚守全工程单文件严格 <250 行底线（Rule 17），将社交调度模块精准拆分为两个独立文件：
+  - `utils/creatorSocialLauncher.ts`（108 行）：专职负责双开门名人堂（DoubleDoorClub）博主全平台个人主页客户端唤醒与手势复制（TikTok、Instagram、YouTube、抖音、小红书、Telegram）；
+  - `utils/socialLauncher.ts`（216 行）：专职负责动作卡片（ExerciseCard）多平台教学视频精确检索与 Instagram #tag 直达；
+* 两大模块各司其职，彼此解耦，从物理层面根除了单文件代码膨胀的隐蔽缺陷。
+
+### 4. 计划管理多下拉槽位动态复合键稳定性 (Stable Slot Key Standard)
+* **动态槽位复用痛点**：在 `WorkoutManager.tsx` 和 `CardioManager.tsx` 动态多部位与有氧槽位配置中，若直接使用数组下标 `key={idx}`，当用户在中间插入、删除或调整训练部位时，React Virtual DOM 会复用旧组件内部的 DOM 状态，导致下拉框选中的部位发生错位（Array Shift Glitch）。
+* **复合键标准化解决方案**：统一升级为基于所属星期与槽位序号的复合稳定键：
+  ```tsx
+  key={`workout-slot-${day}-${idx}`}
+  ```
+  彻底杜绝下拉选择框状态脱节，确保用户定制计划编辑态绝对稳定。
+
+---
+
+## 十一、 双开门名人堂中央注册表 2.0 链上存证与自动化运维规范 (HallOfFameRegistry 2.0 & Headless Ops)
+
+### 1. 合约定点与 TVM 架构
+* **主网合约地址 (Bounceable)**: `EQDJQcb-1K6W7LCowAqTXvrYXHfdyVsRban8oQw9RrZntGka`
+* **主网合约地址 (Non-bounceable)**: `UQDJQcb-1K6W7LCowAqTXvrYXHfdyVsRban8oQw9RrZntDTf`
+* **TVM 特性**: 基于 Tact 1.6 编写，支持 `members: map<Int as uint256, MemberEntry>` O(1) 毫秒级单点查询，全量状态变更在链上通过 `emit(MemberSetEvent{...})` 抛出事件存证。
+* **RBAC 权限分级**:
+  - **所有者 / 董事长 (Chairman)**: `UQBbPM8jUI5deUK0ZmnBludIL1SUBPrpp6k-BSyZukUstM_j`，拥有最高金库提取权与管理员任命权；
+  - **W5 自动化管理员**: `UQCqQVeGQ_90SBai5TjiuA0u-serd-IMg9luyeFeWRngHa8E`（`isAdmin: true`），专职用于 TG Bot 审核同意后的后台秒级签名上链；
+  - **原班俱乐部管理员**: 4 位原班管理员同步激活，协同保障社区审核。
+
+### 2. 自动化运维工具链 (`scripts/`)
+1. **状态点查 (`ops_query.ts`)**: 实时监控合约激活状态、金库余额、已存证创作者总人数 (`total_members`) 与管理员状态；
+2. **成员上链与封禁 (`ops_member.ts`)**:
+   - `set`: 录入或更新创作者 UID、IPFS CID、平台、社交 Handle、宣言与收款钱包；
+   - `block`: 快速熔断封禁（0）或解封（1）违规内容，免去重新部署合约成本；
+3. **金库安全提现 (`ops_treasury.ts`)**:
+   - 合约底层强制保留 `0.05 TON` 租金底池（`nativeReserve`），杜绝因提空导致合约欠费冻结；
+   - 盈余资金一键生成 Tonkeeper 深层提款链接，直达董事长金库。
+

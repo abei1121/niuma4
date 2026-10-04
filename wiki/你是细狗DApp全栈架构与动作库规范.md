@@ -116,7 +116,7 @@
 
 ### 2. 三阶段生命周期闭环
 1. **Gram 钱包登录与身材打卡提交**：用户连接 Gram / TON 钱包并提交打卡照；管理员后台人工审核通过后，该身材卡片与该 Gram 钱包地址永久物理绑定。
-2. **链上动态验权 (Hold-to-Earn)**：前端及探针通过 TonCenter NFT API 实时查询该钱包地址是否持有官方 Club Pass 会员 NFT。只要持有，全网即刻点亮金色尊贵 VIP 动态流光边框并开启 100% 粉丝打赏直通通道。
+2. **链上动态验权 (Hold-to-Earn)**：前端及探针通过 TonCenter NFT API 实时查询该钱包地址是否持有官方 Club Pass 会员 NFT（优先查询 V2 主合约 `EQAOgV_jpZ6YK0ZypEp4oTgAa4T_QZafNN-Or0RSHs3S0Q3a`，未命中平滑回退查询 V1 历史合约 `EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm`）。只要持有，全网即刻点亮金色尊贵 VIP 动态流光边框并开启 100% 粉丝打赏直通通道。
 3. **资产转移即时失活 (Revoke-on-Transfer)**：一旦会员 NFT 被转出或在二级市场售出，系统毫秒级感知失活，全网自动立即剥夺 VIP 徽标并关闭直通打赏通道，无静态身份残留。
 
 ### 3. 创作者扫码专属受邀置顶
@@ -236,10 +236,10 @@ ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 
 ---
 
-## 五、 Web3 动态验权、打赏闭环与移动端沙箱工程规范 (Web3 & Mobile Engineering Standards)
+## 八、 Web3 动态验权、打赏闭环与移动端沙箱工程规范 (Web3 & Mobile Engineering Standards)
 
 ### 1. NFT 持仓动态验权与打赏通道三位一体闭环 (Triple-Gate Tip Protection)
-* **业务铁律**：全网展示中，创作者卡片上的“打赏”按钮（Tip Button）严格且唯一根据该创作者绑定的钱包地址在链上是否持有 **Club Pass NFT** (`EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm`) 来动态激活。
+* **业务铁律**：全网展示中，创作者卡片上的“打赏”按钮（Tip Button）严格且唯一根据该创作者绑定的钱包地址在链上是否持有 **Club Pass NFT**（优先检测 V2 主合约 `EQAOgV_jpZ6YK0ZypEp4oTgAa4T_QZafNN-Or0RSHs3S0Q3a`，未命中平滑回退检测 V1 历史合约 `EQA3amxHgmiMCBO5ijKij-mHxaJ_dxow-zbNnGEGkVXPlKRm`）来动态激活。
 * **三位一体严密管控**：
   1. **瀑布流卡片 (`FeedItem.tsx`)**：仅当卡片滚动进入可视区域（IntersectionObserver）且链上检测持仓 NFT 时，才挂载金色打赏胶囊；
   2. **大图浮层灯箱 (`ClubLightbox.tsx`)**：点击大图展开时，**严禁无条件暴露打赏**，必须通过 `useAddressVipStatus` 校验 `isVip === true`，否则完全隐藏打赏按钮与打赏留言跑马灯；
@@ -254,3 +254,38 @@ ssh a@192.168.1.182 "sudo systemctl restart dapp_xgbot.service"
 * **Blob URL 内存成对销毁**：使用 `URL.createObjectURL` 预览身材照时，必须在重新选图、提交成功与组件卸载生命周期成对执行 `URL.revokeObjectURL`，避免大图内存堆积引发移动端 WebView 闪退。
 * **编辑态槽位防塌缩错位**：多下拉框计划管理器在编辑态严禁直接 `filter(p => p !== 'None')` 导致数组长度收缩，必须保持槽位绝对固定，仅在最终保存时执行清洗。
 * **BigInt 运算异常防御**：对外部数据（如 Hash、时间戳等）使用 `BigInt()` 转换必须包裹 `try-catch`，防范非十进制字符串抛出 `SyntaxError` 击垮全局视图。
+
+---
+
+## 九、 动作教程按地域精准分流与三平台自适应架构 (Regional 3-Platform Tutorial Architecture)
+
+### 1. 4 列 Bento 黄金网格与严苛平台选拔原则
+动作训练卡片顶部（`ExerciseCard.tsx`）采用固定 **4 列极简 Bento 网格**（`[部位徽章] + [平台1] + [平台2] + [平台3]`），单行永不折行，各语言环境严格锁定 3 个最高品质平台：
+
+```mermaid
+graph LR
+    A["用户语言环境<br/>(currentLang)"] -->|zh_cn 大陆中文| B["[部位徽章] + [抖音] + [小红书] + [Ins]"]
+    A -->|海外与全语言<br/>en/zh_tw/zh_hk/ja/ko/ru/vi| C["[部位徽章] + [YouTube] + [TikTok] + [Ins]"]
+```
+
+* **严格 3 平台上限**：彻底剔除信息过载，保障组间 60 秒休息期秒级看懂动作；
+* **低质平台绝对物理隔离原则**：
+  - **快手**：严重破坏品牌硬核黑曜石调性与健身美学，坚决弃用；
+  - **Bilibili (B站)**：平均 15 分钟的长视频结构与前置长广告不符合健身房即时组间纠错场景，坚决弃用；
+  - **Google Video**：零社交属性与审美活力，坚决弃用。
+
+### 2. 精准地域分流与交互矩阵
+| 区域模式 | 平台 1 (左) | 平台 2 (中) | 平台 3 (右) | 核心优势与视觉定调 |
+| :--- | :--- | :--- | :--- | :--- |
+| **🇨🇳 大陆简体 (`zh_cn`)** | **抖音 (Douyin)**<br/>`snssdk1128://search?keyword={动作} 教学` | **小红书 (Xiaohongshu)**<br/>`xhsdiscover://search/result?keyword={动作} 动作教学` | **Ins (Instagram)**<br/>`instagram://tag?name={cleanTag}` | 抖音青色音符 + 小红书薯红微书本 + Ins 幻彩粉；小红书深耕博主发力细节，Ins 定位国际审美 |
+| **🌍 海外全语言 (`en` 等)** | **YouTube**<br/>`youtube://results?search_query={动作} tutorial` | **TikTok**<br/>`snssdk1233://search?keyword={动作} tutorial` | **Instagram (Ins)**<br/>`instagram://tag?name={cleanTag}` | 经典红 + 霓虹粉 + 幻彩粉；覆盖全球顶尖健美博主视频库与 Reels |
+
+### 3. Instagram 动作标签直达与剪贴板自动复制闭环 (Instagram Tag Deep Link Protocol)
+* **技术突破**：针对 Instagram 客户端缺乏通用关键词全文搜索 Scheme 的限制，采用“动作标准标签直达 + 剪贴板自动预置”闭环协议：
+  1. **标签推导**：自动提取动作的标准英文名称并格式化为纯净字母标签 `cleanTag`（如 `Barbell Bench Press` -> `barbellbenchpress`，`Squat` -> `squat`，`Lat Pulldown` -> `latpulldown`）；
+  2. **移动端 Scheme 唤醒**：直接拉起 `instagram://tag?name=${cleanTag}`，直达该动作的全球顶尖健身模特与运动员 Reels 视频流；Web 端平滑降级为 `https://www.instagram.com/explore/tags/${cleanTag}/`；
+  3. **剪贴板双保险复制**：点击瞬间后台异步将动作名写入剪贴板，并触发轻量级 Toast（“已复制「动作名」，已为您直达 Ins #tag！”），用户如需搜索特定作者只需长按粘贴。
+
+### 4. 训练卡教程与名人堂社媒双轨独立规范 (Dual-Track Independence)
+* **单卡教程**：严格遵守上述地域分流与 3 平台规则，专注即时训练纠错；
+* **双开门名人堂 (DoubleDoorClub)**：创作者 UGC 个人社交主页名片保持 100% 全球化互通（覆盖 TikTok、Instagram、YouTube、抖音、小红书、Telegram 等），绝不因训练卡语言而缩减，保障全球创作者商业曝光与跨平台引流权益。

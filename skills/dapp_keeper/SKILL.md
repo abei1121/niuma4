@@ -50,7 +50,11 @@ triggers:
    - **Club Pass NFT 持有者 (VIP)**: 尊享 100% 全额到账（0% 平台服务费）与金色黑曜石流光外观；
    - **纯游客模式 (无钱包)**: 仅作展示，不开放打赏通道；
    - 验权与缓存统一采用 `normalizeTonAddress` 转为小写 Raw Hex (`0:xxx`)，正向 7 天、负向 10 分钟双层冷热缓存及 In-flight 并发去重。标准实现详见 `ton_tipping_protocol`。
-8. **移动端离屏海报与内存对象安全规范 (Mobile Canvas & Memory Safety Standard)**: 2K 海报离屏渲染 DOM 必须置于视口内不可见层 (`left: 0, top: 0, opacity: 0.01, zIndex: -100`)，严禁置于 `-9999px` 导致 WebKit 裁剪黑屏；`URL.createObjectURL` 必须在选图替换、提交完成与组件卸载时成对调用 `URL.revokeObjectURL` 释放内存。
+8. **移动端战神海报与二维码长按识别扫码标准 (Mobile Poster & 100% QR Code Recognition Standard)**:
+   - 2K 海报离屏渲染 DOM 必须置于视口内不可见层 (`left: 0, top: 0, opacity: 0.01, zIndex: -100`)，严禁置于 `-9999px` 导致 WebKit 裁剪黑屏；
+   - **取消胶囊，升级 3D 战神微浮雕排版**: 废除 `border-radius: 9999px` 与渐变胶囊背景，消除 html2canvas 导出时的圆角黑边锯齿、文字基线削顶及多语言排版撑爆；采用三层立体深度阴影与金色发光微光；
+   - **二维码 100% 扫码识别与长按唤醒铁律**: 严禁给二维码图片加任何圆角（`borderRadius: 0`），保证左上、右上、左下三个核心定位寻象角标（Finder Patterns）几何完整；尺寸放大至 94px 以上，生成参数严格配置 `margin: 3`（3 模块纯白静区）与高容错率 `Q`（25% 容错）；预览弹窗 100% 异步挂载真实 `<img src="..." />` 并显式注入 `WebkitTouchCallout: 'default'`，彻底消除了点击缩略图展示 DOM `<div>` 导致手机端无法长按识别二维码的缺陷；
+   - `URL.createObjectURL` 必须在选图替换、提交完成与组件卸载时成对调用 `URL.revokeObjectURL` 释放内存。
 9. **TonConnect 移动端多钱包高可用规范 (TonConnect Multi-Wallet Standard)**:
    - 全生态 DApp（Club、细狗、人生运势历）必须在本地静态库中预置主流钱包元数据 (`includeWallets: LOCAL_WALLETS`)，严禁直接依赖易被阻断的 `raw.githubusercontent.com` 远程拉取；
    - 本地钱包元数据必须为所有插件/注入钱包配置完整的 `jsBridgeKey`（如 `bitgetTonWallet`, `binancew3w`, `tonkeeper` 等），严禁遗漏导致无法探测注入环境而强行降级为易断联的远端 SSE 桥接；

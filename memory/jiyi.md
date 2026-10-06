@@ -94,4 +94,10 @@
     - `obsxiaojiucai/deploy.sh`：M2 极速构建 -> brotli/gzip 双预压缩 -> git 推送 -> 远端 pull -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
     - `rawxiaojiucai/deploy.sh`：M2 极速构建 -> brotli/gzip 双预压缩 -> git 推送 -> 远端 pull -> rsync 零编译推流 `dist/` -> 远端 Nginx 重载。
 
+## 15. TON 生态统一打赏分账与官方董事长金库资产唯一真理铁律 (TON Tipping & Chairman Treasury Law)
+- **官方唯一董事长金库/国库**：全矩阵 DApp 官方最高董事长金库、NFT 合约 Owner、名人堂合约 Chairman 及 20% 平台服务费统一收款金库唯一定点为 `UQBbPM8jUI5deUK0ZmnBludIL1SUBPrpp6k-BSyZukUstM_j`（Raw: `0:5b3ccf23508e5d7942b46669c196e7482f549404fae9a7a93e052c99ba452cb4`）。严禁任何新 Agent 擅自使用临时测试地址或创作者个人钱包替换董事长金库！
+- **双轨商业分账模型**：普通创作者打赏强制执行 80%/20% 双消息原子分账（80% 创作者，20% 董事长金库）；持有官方 Club Pass 会员卡 NFT（`EQAOgV_jpZ6YK0ZypEp4oTgAa4T_QZafNN-Or0RSHs3S0Q3a`）享受 0% 抽水（100% 全额秒到创作者）。
+- **TonConnect 零报错协议规范**：消息数组单项严禁注入 `bounce` 或 `network` 等非法字段；无留言时 `payload` 必须为 `undefined`，严禁传空字符串 `""`；文字截断在 120 字符以内；严格适配 Tonkeeper、币安 Web3 钱包、Bitget、TG 钱包原生 DeepLink 唤起。
+
+
 

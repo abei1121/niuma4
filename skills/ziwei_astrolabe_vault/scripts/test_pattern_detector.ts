@@ -1,13 +1,22 @@
-// scripts/test_pattern_detector.ts - Offline Astrolabe Pattern Detector Tester
-// Run with: npx tsx /Users/hi/.agents/skills/ziwei_astrolabe_vault/scripts/test_pattern_detector.ts
+// scripts/test_pattern_detector.ts - Offline Astrolabe Pattern Detector Tester (<= 250 lines)
+// Run with: npx --yes tsx /Users/hi/.agents/skills/ziwei_astrolabe_vault/scripts/test_pattern_detector.ts
 
 import { astro } from '/Users/hi/niuma/projects/obsxiaojiucai/node_modules/iztro';
 import { detectAstrolabePatterns, formatPatternsForFactTree } from '/Users/hi/niuma/projects/obsxiaojiucai/utils/astrolabePatternDetector';
+import { PATTERN_REGISTRY } from '/Users/hi/niuma/projects/obsxiaojiucai/utils/astrolabePatternTypes';
+
+console.log(`========================================`);
+console.log(`正统 64 格局法典完整性核验: ${Object.keys(PATTERN_REGISTRY).length} / 64`);
+console.log(`========================================`);
+if (Object.keys(PATTERN_REGISTRY).length !== 64) {
+  throw new Error(`Expected exactly 64 patterns in registry, got ${Object.keys(PATTERN_REGISTRY).length}`);
+}
+console.log(`64 大正统格局注册库完整性 100% 达标！\n`);
 
 function runTest(dateStr: string, timeIdx: number, gender: '男' | '女') {
-  console.log(`\n========================================`);
+  console.log(`----------------------------------------`);
   console.log(`排盘测试: ${dateStr} ${timeIdx}时 (${gender})`);
-  console.log(`========================================`);
+  console.log(`----------------------------------------`);
 
   const astrolabe = astro.bySolar(dateStr, timeIdx, gender, true, 'zh-CN');
   const birthYearStem = (astrolabe.chineseDate?.split(' ')[0] || '')[0] || (astrolabe.lunarFourPillars?.split(' ')[0] || '')[0] || '';
@@ -33,7 +42,7 @@ function runTest(dateStr: string, timeIdx: number, gender: '男' | '女') {
   }
 
   const factTreeLine = formatPatternsForFactTree(matches);
-  console.log(`事实树输出行:\n  ├ 0. 格局定品: ${factTreeLine}`);
+  console.log(`事实树输出行:\n  ├ 0. 格局定品: ${factTreeLine}\n`);
 }
 
 // 示例 1: 1990-05-15 12:00 男
@@ -41,3 +50,12 @@ runTest('1990-05-15', 6, '男');
 
 // 示例 2: 1988-08-08 08:00 女
 runTest('1988-08-08', 4, '女');
+
+// 示例 3: 1994-09-20 06:00 男 (卯时 巨机同临格 / 府相朝垣格)
+runTest('1994-09-20', 3, '男');
+
+// 示例 4: 1991-03-25 14:00 女 (未宫 明珠出海格 / 日月并明格)
+runTest('1991-03-25', 7, '女');
+
+// 示例 5: 1985-02-18 12:00 男 (午宫 紫微 极向离明格 / 君臣庆会格)
+runTest('1985-02-18', 6, '男');

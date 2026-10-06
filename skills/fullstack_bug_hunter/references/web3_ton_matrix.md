@@ -67,3 +67,26 @@
 - **防御铁律**:
   - 前端调起合约交互（如铸造、部署）必须预留充足 Gas（一般建议 `>= 0.05 TON`），并指定 `mode: 64` 将未消耗完的剩余 Gas 自动退回调用者；
   - 前端必须配置动态 RPC 故障转移池（如 Toncenter + GetBlock + TonAPI / Orbs），在检测到 HTTP 429/502 或请求超过 3.5s 时毫秒级切换节点。
+
+## 8. TonConnect UI 钱包选单缺失与 `walletsListUrl` 无效参数陷阱
+- **核心风险**:
+  1. 官方 `@tonconnect/ui` 的 `walletsListConfiguration` 只接收 `{ includeWallets: UIWallet[] }`，传入 `walletsListUrl` 会被静默忽略；
+  2. 忽略后 SDK 会向 `https://raw.githubusercontent.com/.../wallets-v2.json` 发起请求，在移动弱网或受限网络下必触发超时；
+  3. 请求失败后 SDK 退化为硬编码极简列表（往往只保留 Tonkeeper），导致 Telegram Wallet、OKX、Bitget 等全线消失。
+- **防御铁律**:
+  - 项目静态资源预置 `LOCAL_WALLETS` 镜像，显式通过 `walletsListConfiguration={{ includeWallets: LOCAL_WALLETS }}` 注入；
+  - 界面提供显式【换钱包】按钮，通过先 `disconnect()` 后 `openModal()` 破除 Session 锁定。
+
+## 9. 拉起钱包前串行阻塞 RPC 调用与按钮死锁陷阱
+- **核心风险**:
+  点击支付/铸造后，若在拉起钱包前串行请求 `getContractState`、`getGetCurrentPrice`，一旦网络抖动或 RPC 429 限流，钱包尚未唤醒界面即进入假死状态。
+- **防御铁律**:
+  - 本地离线 0ms 组装 BOC 消息载荷（`beginCell().storeUint(...).endCell().toBoc().toString('base64')`），直接唤醒 TonConnect；
+  - 交易状态采用异步状态机解耦，后台容错轮询链上出块，并提供秒级取消复位机制。
+
+## 10. 客户端多消息分账在移动端钱包中的闪退与兼容性陷阱
+- **核心风险**:
+  部分移动端钱包（如 Telegram Wallet `@wallet` 或旧版 Web3 钱包）对单笔交易包含多条消息（`messages: [...]` 数组长度 > 1）支持极差，容易静默丢失消息或直接抛出签名失败异常。
+- **防御铁律**:
+  - 优先在智能合约层面设计分账（Payment Splitter），前端保持单笔消息交互；
+  - 客户端多消息必须嗅探钱包环境并提供降级单笔通道。

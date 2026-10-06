@@ -17,7 +17,7 @@ triggers:
 1. **前端工程 (`/home/a/obsxiaojiucai/`)**：React 19 + Vite 6 + TypeScript + TailwindCSS + PWA，集成正统紫微斗数排盘、钦天四化飞星与来因宫立极、真太阳时校准、动态流日四化与吉忌真机引擎、24h 海报分享裂变解锁门槛、造物主人生剧本闭环流式推演、东方宣纸重墨高对比度排版、长图装裱导出与小韭菜俱乐部会员卡 (Club Pass) 鉴权及 Web3 钱包直连。
 2. **后端微服务 (`/home/a/obs_membership_rust/`)**：纯 Rust 构建（常驻内存仅 ~14MB），提供 ECDSA P-256 密码学签名防重放验签、三层梯队天命能量治理、`agy` 大模型流式推演管道与官方私有安全闭环守护。
 3. **专属客服与运维工具链 (`/home/a/bin/obs_code_tool`)**：本地毫秒级激活码查询、5 秒一键解绑重置（客服专职）、新卡批量入库及全局统计。
-4. **Nginx 零拷贝边缘**：Brotli / Gzip 静态双重预压缩直发，`/api/` 路由内聚反代至本地 Rust 服务（`127.0.0.1:8096`），配置专用非缓冲 SSE 直发管道。
+4. **Cloudflare 边缘托管与专属隧道**：前端托管于 Cloudflare Workers Static Assets (`obsxiaojiucai`)，`/api/` 路由经专属独立安全隧道 `obsapi.xiaojiucai.pro` 同源穿透直连 182 本地 Rust 微服务（`127.0.0.1:8096`），配置专用非缓冲 SSE 直发管道。
 
 ---
 
@@ -287,6 +287,21 @@ triggers:
 - **材质对比度**：
   - 左杯俯杯凸脊圆拱实心高耸，右杯仰杯平展内腹木纹细腻，提高描边与填充不透明度（`fillOpacity: 0.48~0.65`, `strokeWidth: 2.0~2.5`），杜绝发虚单薄。
 
+### 14. 新客无感首屏直入与意图追溯承接规范 (Guest Onboarding & Intent Continuity Standard)
+- **核心体验与无感直入 (Zero-Interruption Guest Experience)**:
+  - 新访客首次访问 `obs.xiaojiucai.pro`，**严禁一进站就强行弹出「生辰八字输入框」遮蔽全站**（避免高心理门槛引发用户反感与流失）；
+  - 初始挂载状态默认设置 `isEditingProfile = false`，首屏直出今日黄历、万年历、公农历干支与通用通胜择吉，让用户先感知中华历法的文人质感；
+  - 专属运势卡片（`FortuneCard.tsx`）在无八字档案时优雅展示为「游客模式」（`isGuest = true`），副标引导“录入生辰八字，推演专属流日”，右侧配备内敛精工的行动胶囊按钮；
+  - **禁绝廉价刺眼红底红字铁律**：游客引导按钮严禁使用 `bg-red-500` / `text-red-400`，严格恪守文人雅墨色阶，采用黑曜玄墨与御用古铜金结合（`border-amber-500/30 text-amber-200/90 hover:bg-amber-500/10`），8 语言原生翻译无违和感。
+- **意图追溯承接机制 (Intent Continuity via pendingAction)**:
+  - 在根入口 `App.tsx` 建立意图状态 `pendingAction: 'chart' | 'daily' | null`；
+  - **路径 A（点击顶栏「查看你的人生剧本」）**：记录 `pendingAction = 'chart'` 并拉起 `OnboardingModal`；用户录入八字保存后，系统自动无缝切换至排盘视界（`viewMode = 'astrolabe'`），无需用户再次点击；
+  - **路径 B（点击专属运势卡片「下一步：录入生辰八字」）**：记录 `pendingAction = 'daily'` 并拉起 `OnboardingModal`；用户录入八字保存后，系统自动为用户打开今日运势详解模态（`DailyDetailModal`）；
+  - **路径 C（主动点击编辑档案）**：无 `pendingAction`，录入完成后静默刷新当前界面，不打乱用户浏览节奏；
+  - 弹窗顶部标定唯一定名「开启专属命运剧本」，并以用户当前语言告知录入八字是为了“推算紫微命盘与今日专属运势”，化解用户隐私顾虑。
+- **单代码文件严格 `<= 250 行` 绝对红线 (Small File Standard)**:
+  - 重构后的 `App.tsx`（249行）、`FortuneCard.tsx`、`useProfileRecords.ts`、`OnboardingModal.tsx` 均严格坚守 250 行红线，单一职责，杜绝任何巨石文件。
+
 ---
 
 ## 核心运维与调试 SOP
@@ -303,7 +318,8 @@ triggers:
 - 源码提交并推送到 GitHub 远端；
 - SSH 远程触发 J3710 (`192.168.1.182`) `/home/a/obsxiaojiucai` 执行 `git pull`；
 - `rsync -avz --delete dist/` 零编译原子推流预压缩产物至生产机；
-- 远程执行 `sudo nginx -t && sudo systemctl reload nginx` 完成无感热上线。
+- 远程执行 `sudo nginx -t && sudo systemctl reload nginx` 完成无感热上线；
+- 触发 Cloudflare Workers Edge 极速部署 (`npx wrangler deploy`)，实现全球 Anycast CDN 0ms 极速直发。
 
 若在 J3710 本地离线环境维护，亦可调用本地脚本：`/home/a/bin/deploy_obs_site.sh`。
 
@@ -412,6 +428,15 @@ curl -s http://127.0.0.1:8096/api/health
      - 两个场域物理隔离：外网纯净面向用户，内网透视排障除 Bug。
    - **小文件与单一职责法定规范**：
      - 所有前端组件、工具库与后端 Rust 文件严格控制在 **250 行以内**，单一职责，杜绝超大臃肿文件引发的不可控副作用。
+10. **国内高可用与首屏极速直达规范 (Mainland China High-Availability & Zero-Stall Standard)**：
+    - **Cloudflare ECH 强制禁用铁律**：国内 GFW 对 ECH (Encrypted Client Hello) 握手执行无差别主动阻断，会导致 iOS Safari、Chrome 117+ 与 Edge 打开站点报错 `ERR_CONNECTION_CLOSED` 或白屏超时。必须保持 Zone 级 `ech: off`，彻底消除 DNS HTTPS (Type 65) 中的 ECH 拓展，走标准 SNI 直通；
+    - **禁用后量子密钥交换与 HTTP/3 (UDP 443)**：`pq_keyex: off` 避免分片包被运营商路由丢弃；`http3: off` 消除 `alt-svc: h3=":443"` 响应头，避免国内 UDP 443 限速丢包导致浏览器挂起数秒；
+    - **首屏绝对剔除 Web3 与地图重型包**：`@ton/core`、`@tonconnect/ui-react`（~700KB）与 `leaflet`（~150KB）全部解耦为 `lazy()` 异步按需加载，在 `vite.config.ts` 中配置 `modulePreload.resolveDependencies` 拦截首屏预载，确保首页首屏纯静态包体积下降 40%+，杜绝国内弱网加载超时。
+11. **渐进式引导与新访客零冷启动阻断规范 (Progressive Onboarding & Zero Cold-Start Friction Canon)**：
+    - **彻底解除新人首屏强阻断**：新用户初次进入站点，严禁无脑弹出全屏阻断式录入生辰八字弹窗，消除首屏冷启动流失陷阱；
+    - **公共全景日历与全局能量零门槛秒开**：默认呈现当日公历/农历、岁次干支、全局五行能量以及每日万年历宜忌，让新用户 0 门槛秒进主页并直观感知东方宣纸美学与实用日历价值；
+    - **个性化推演渐进式引导**：在专属命理卡片区域呈现轻量级引导（如“点击录入生辰，解锁属于你的专属命宫与每日精准神煞剧本”），当用户主动点击个人命盘或剧本推演时，才渐进式调出生辰录入面板，大幅提高新客留存率。
+
 
 
 

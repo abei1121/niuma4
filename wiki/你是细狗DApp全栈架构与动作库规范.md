@@ -373,3 +373,28 @@ graph LR
    - 合约底层强制保留 `0.05 TON` 租金底池（`nativeReserve`），杜绝因提空导致合约欠费冻结；
    - 盈余资金一键生成 Tonkeeper 深层提款链接，直达董事长金库。
 
+---
+
+## 十二、 海报全屏渲染、客户端实拍照微压缩与 PWA 静默热更规范
+
+### 1. 海报视口绝对坐标对齐（消除 Flexbox 预变换偏移死锁）
+* **错误原点**：在固定小视口（如 340×604）缩放预览大画布（720×1280）时，外层容器严禁使用 `flex items-center justify-center` 搭配子元素 `transform: scale(0.472222); transformOrigin: top left`。
+* **几何推导陷阱**：Flexbox 会在 CSS 变换前将 720×1280 子元素相对小容器居中布局（top-left 被推移至 `(-190px, -338px)`）；而随后的 `transform` 从该负坐标原点缩放，导致整个海报画面向左上方大范围偏移，在 `overflow: hidden` 视口中惨遭截断，用户只能看到右下角的一小撮区域。
+* **法定正确定位范式**：外层容器声明明确像素（如 `w-[340px] h-[604px]`）并设为 `position: relative; overflow: hidden;`；内层 720×1280 画布强制采用 `position: absolute; top: 0; left: 0; width: 720px; height: 1280px; transform: scale(0.472222); transformOrigin: top left;`，将左上角严格锚定在 `(0, 0)`，彻底杜绝 Flex 居中预推移。
+
+### 2. 实拍身材图双层混合渲染架构与 html2canvas 兼容
+* **html2canvas 裁剪失效缺陷**：`html2canvas` 无法正确解析 `<img style="object-fit: cover" />`，会将手机高分辨率实拍图（3000×4000+）从原图 `(0, 0)` 开始按 1:1 强行平铺，生成的海报只截取了照片左上角极小的一块（即“只剩一个角”）。
+* **双层混合渲染解决方案**：
+  - **底层（导出层）**：设置 CSS `background-image: url(...)` 配合 `background-size: cover; background-position: center;`，`html2canvas` 对 CSS background cover 的解析是 100% 完美的，保障 720×1280 高清画布居中铺满截取；
+  - **上层（预览层）**：保留硬件加速的 `<img>` 标签，并注入 `data-html2canvas-ignore="true"`，供浏览器高帧率预览的同时，防止在 Canvas 导出时二次覆盖未裁剪原图；
+  - **滚动视口零漂移**：在 `html2canvas` 导出选项中显式注入 `x: 0, y: 0, scrollX: 0, scrollY: 0`，杜绝真机上下滑动页面后海报产生的黑边与切除。
+
+### 3. 前端图片微压缩防 iOS Safari 288MB 显存崩溃
+* **大图内存陷阱**：手机原生拍摄的 10MB~20MB 原图若直接通过 `FileReader.readAsDataURL` 转成 Base64，会膨胀至近 20MB 塞入 React 状态与 DOM，在 iOS Safari 调用 `html2canvas` 时极易瞬间击穿 WebKit 的 288MB Canvas/DOM 显存上限，导致页面瞬间闪退、黑屏或白屏重载。
+* **前端微压缩防护**：在 `WorkoutPoster.tsx` 中引入 `browser-image-compression`，在转 Base64 之前自动将实拍图降采样至 1440P 并无损压至 350KB 以内，彻底根治真机发烫与内存溢出。
+
+### 4. PWA 异步静默热重载与发版缓存自动化更新
+* **消除 800ms abort 锁死旧版陷阱**：废除旧 Service Worker 中带有超时 abort 的请求覆盖机制，采用真正的 **Stale-While-Revalidate**：前台即使在弱网（>600ms）下先以本地缓存极速呈现，后台网络 fetch 也绝不断流，静默完成后写回 Cache Storage；
+* **发版自动递增 CACHE_NAME**：在 `deploy.sh` 发布脚本中自动将构建时间戳注入 `public/sw.js` 的 `CACHE_NAME`（如 `xg-scrawny-offline-v${BUILD_TIMESTAMP}`），促使客户端 Service Worker 自动触发更新周期并废弃旧缓存，用户无须手动清除浏览器缓存。
+
+

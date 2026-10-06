@@ -29,6 +29,10 @@ FullStack Bug Hunter 是面向现代高可用 Web3、移动端 WebApp/PWA 与微
   - `RULE-W3-03`: 用户打赏/转账目标地址硬编码 `bounceable: true` 导致未初始化新钱包资金回弹
   - `RULE-W3-04`: TonConnect 2.0 签名验签摘要构造与 `'ton-safe-sign-magic'` 混用及伪签名放行漏洞
   - `RULE-W3-05`: 变量未经 try/catch 强转 `BigInt()` 遭遇非数字字符串导致运行时崩溃
+  - `RULE-W3-06`: TonConnect UI 配置依赖 `walletsListUrl` 无效参数及 GitHub Raw 超时导致钱包选单退化只剩 Tonkeeper
+  - `RULE-W3-07`: 拉起钱包前串行阻塞调用 RPC 导致的界面假死与按钮死锁（强制 0ms 本地离线 BOC 构建与异步后台出块追踪）
+  - `RULE-W3-08`: TonConnect 移动端长连接 Session 锁定导致无法自选/切换其他钱包（强制显式换钱包解绑与重新呼起通道）
+  - `RULE-W3-09`: 客户端多消息分账（Multi-message）在 Telegram Wallet (`@wallet`) 等移动端环境遭遇签名不支持/闪退陷阱
   - `RULE-MOB-01`: iOS Safari/WebKit 异步 `await` 导致剪贴板用户手势凭据失效
   - `RULE-MOB-02`: 移动端 WebView/Telegram 环境直调非 Universal 自定义协议导致白屏崩溃
   - `RULE-MOB-03`: 原生 `alert()`/`confirm()` 阻塞事件循环与冻结主线程

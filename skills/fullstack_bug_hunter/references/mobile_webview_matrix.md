@@ -45,3 +45,41 @@
   - 严禁通过 `touchAction = 'none'` 锁定移动端页面滚动；
   - 正规防滚动穿透方案：在模态框挂载时设置 `document.body.style.overflow = 'hidden'`，并在组件卸载或关闭回调中严格清除该内联样式；
   - 移动端弹窗必须通过 React 绑定 Telegram 物理返回键（`Telegram.WebApp.BackButton`），确保用户使用手势后退时能自然关闭当前弹窗。
+
+## 8. 自定义 URL Scheme 唤醒崩溃与无感临时 Iframe 跳板规范 (Safe Ephemeral Iframe)
+- **核心风险**: 调用第三方 App（如 `snssdk1128://`、`kimi://`、`doubao://`、`tonkeeper://`）时，若直接使用 `window.location.href = customScheme`，在用户未安装该 App 的情况下：
+  1. iOS Safari 会弹出“Safari 无法打开页面，因为地址无效”的系统级原生警告框；
+  2. Telegram / 微信内置 WebView 会直接中断整个容器会话，呈现白屏或网络未知协议崩溃页。
+- **防御铁律**:
+  - `http://` 与 `https://` 优先走 `window.open(url, '_blank', 'noopener,noreferrer')`；
+  - 自定义 Scheme 统一使用**无感临时 DOM Iframe 跳板**拉起：
+  ```ts
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '0';
+  iframe.style.top = '0';
+  iframe.style.opacity = '0.01';
+  iframe.style.pointerEvents = 'none';
+  iframe.style.zIndex = '-100';
+  iframe.src = customSchemeUrl;
+  document.body.appendChild(iframe);
+  setTimeout(() => {
+    try { document.body.removeChild(iframe); } catch (_) {}
+  }, 1000);
+  ```
+  已安装时 OS 会截获拉起 App；未安装时 Iframe 在后台静默消亡，宿主 Web 页面 100% 保持正常交互，绝不崩溃。
+
+## 9. iOS Safari 剪贴板复制负坐标跳动陷阱 (-9999px Jump Trap)
+- **核心风险**: 降级复制时创建隐藏 `<textarea>`，若将其 CSS 样式设为 `left: -999999px; top: -999999px;`，在 iOS WebKit 中调用 `textarea.focus()` 与 `textarea.select()` 会强行触发滚动视图的焦点对齐（Focus Scrolling），导致移动端整个视口瞬间剧烈闪烁并跳跃至负坐标或页面顶部。
+- **防御铁律**:
+  - 严禁将降级 DOM 设在 `-9999px`；
+  - 必须使用安全的视口边界不可见层：
+  ```css
+  position: fixed;
+  left: 0;
+  top: 0;
+  opacity: 0.01;
+  pointer-events: none;
+  z-index: -100;
+  font-size: 16px; /* 防止 iOS 触发聚焦自动放大 */
+  ```

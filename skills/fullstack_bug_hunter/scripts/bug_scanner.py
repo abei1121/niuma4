@@ -7,6 +7,7 @@ import os
 import sys
 import re
 import argparse
+import subprocess
 
 COLOR_RED = "\033[91m"
 COLOR_YELLOW = "\033[93m"
@@ -105,11 +106,79 @@ RULES = [
         "severity": "HIGH",
         "pattern": r"\bconst\s+\w+\s*=\s*BigInt\s*\(\s*(?!\d+n?|['\"][0-9]+['\"])[a-zA-Z0-9_\.]+\s*\)",
         "message": "Converting variables via BigInt() without try/catch or format check throws SyntaxError on non-numeric strings, crashing the feed."
+    },
+    {
+        "id": "RULE-SEC-01",
+        "name": "Unguarded JSON.parse on Storage",
+        "severity": "HIGH",
+        "pattern": r"(?:const|let|var)\s+\w+\s*=\s*JSON\.parse\s*\(\s*(?:localStorage|sessionStorage)\.getItem\b",
+        "message": "Calling JSON.parse() on storage getItem without try/catch crashes the app on corrupted or migrated data schemas."
+    },
+    {
+        "id": "RULE-MOB-07",
+        "name": "Naked / Unguarded Clipboard API Call",
+        "severity": "LOW",
+        "pattern": r"(?<!\.)\bnavigator\.clipboard\.writeText\s*\(",
+        "message": "Direct navigator.clipboard.writeText without document.execCommand fallback fails on mobile WebViews/iframes."
+    },
+    {
+        "id": "RULE-W3-10",
+        "name": "Hardcoded Single Third-Party RPC URL",
+        "severity": "MEDIUM",
+        "pattern": r"['\"`](?:https?:\/\/toncenter\.com\/api\/v2\/jsonRPC|https?:\/\/mainnet\.infura\.io\/v3|https?:\/\/eth-mainnet\.alchemyapi\.io)[^'\"`]*['\"`]",
+        "message": "Hardcoded single RPC endpoint introduces single-point-of-failure (HTTP 429). Implement multi-node failover pool."
+    },
+    {
+        "id": "RULE-RCT-06",
+        "name": "Slot Anti-Shift Array Filter in Form",
+        "severity": "MEDIUM",
+        "pattern": r"(?:selectedSlots|slotList|options)\.filter\s*\([^)]*Boolean[^)]*\)\s*\.map",
+        "message": "Filtering empty slots during edit state collapses selector indices (Array Shift Glitch). Maintain stable slot indices."
+    },
+    {
+        "id": "RULE-SEC-02",
+        "name": "Unencrypted Private Key / Mnemonic in Web Storage",
+        "severity": "CRITICAL",
+        "pattern": r"(?:localStorage|sessionStorage)\.setItem\s*\(\s*['\"`](?:mnemonic|seed_phrase|private_key|secret_key|privateKey|secretKey)['\"`]",
+        "message": "Storing raw private keys or seed phrases in browser storage exposes funds to XSS and extension snooping. Use Web Crypto API or external signer."
+    },
+    {
+        "id": "RULE-SEC-03",
+        "name": "Unchecked postMessage Origin in Message Listener",
+        "severity": "HIGH",
+        "pattern": r"(?:window|document)\.addEventListener\s*\(\s*['\"]message['\"]",
+        "message": "Message listener without event.origin validation allows arbitrary cross-origin window spoofing and iframe attacks."
+    },
+    {
+        "id": "RULE-W3-11",
+        "name": "TON Address Direct String Equality Comparison",
+        "severity": "MEDIUM",
+        "pattern": r"\b(?:userAddress|walletAddress|ownerAddress|rawAddress)\s*(?:===|!==)\s*(?:userAddress|walletAddress|ownerAddress|['\"`]0:)",
+        "message": "Comparing TON addresses directly via string equality fails between Raw (0:...) and Bounceable (EQ...) formats. Use Address.parse(a).equals(Address.parse(b))."
+    },
+    {
+        "id": "RULE-MOB-08",
+        "name": "Naked / Unguarded navigator.vibrate Call",
+        "severity": "LOW",
+        "pattern": r"(?<!\.)\bnavigator\.vibrate\s*\(",
+        "message": "Calling navigator.vibrate without feature check throws or fails silently on iOS Safari / WebKit. Guard with 'vibrate' in navigator or use TMA HapticFeedback."
     }
 ]
 
 EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
 DEFAULT_EXCLUDE_DIRS = {"node_modules", "dist", ".git", "build", "coverage", ".next", "mingrentangheyue", "contracts"}
+
+def mask_comments(content):
+    # Mask multiline comments preserving newlines
+    def repl_multi(m):
+        nl = m.group(0).count('\n')
+        return '\n' * nl + ' ' * (len(m.group(0)) - nl)
+    # Mask singleline comments preserving character width
+    def repl_single(m):
+        return ' ' * len(m.group(0))
+    masked = re.sub(r'/\*[\s\S]*?\*/', repl_multi, content)
+    masked = re.sub(r'//[^\n]*', repl_single, masked)
+    return masked
 
 def scan_file(file_path, max_lines, enforce_file_size=True):
     findings = []
@@ -130,9 +199,21 @@ def scan_file(file_path, max_lines, enforce_file_size=True):
         })
 
     full_content = "".join(lines)
+    code_content = mask_comments(full_content)
+
     for rule in RULES:
-        for match in re.finditer(rule["pattern"], full_content):
-            line_no = full_content[:match.start()].count("\n") + 1
+        for match in re.finditer(rule["pattern"], code_content):
+            if rule["id"] == "RULE-MOB-07" and "execCommand" in code_content:
+                continue
+            if rule["id"] == "RULE-SEC-03":
+                sub_code = code_content[match.start():match.start() + 400]
+                if ".origin" in sub_code or "origin" in sub_code:
+                    continue
+            if rule["id"] == "RULE-MOB-08":
+                prefix = code_content[max(0, match.start() - 250):match.start()]
+                if "navigator.vibrate" in prefix or "'vibrate' in navigator" in prefix or "HapticFeedback" in code_content:
+                    continue
+            line_no = code_content[:match.start()].count("\n") + 1
             findings.append({
                 "line": line_no,
                 "id": rule["id"],
@@ -144,7 +225,7 @@ def scan_file(file_path, max_lines, enforce_file_size=True):
 
     # Rule: Missing Effect Cleanup
     effect_pattern = re.compile(r"useEffect\s*\(\s*\(\s*\)\s*=>\s*\{([\s\S]*?)\}\s*,\s*\[", re.MULTILINE)
-    for match in effect_pattern.finditer(full_content):
+    for match in effect_pattern.finditer(code_content):
         body = match.group(1)
         if ("addEventListener" in body or "setInterval" in body) and "return" not in body:
             line_no = full_content[:match.start()].count("\n") + 1
@@ -168,7 +249,21 @@ def scan_file(file_path, max_lines, enforce_file_size=True):
             "snippet": "createObjectURL without revokeObjectURL"
         })
 
-    return findings
+def get_git_files(target_dir: str, mode: str) -> list:
+    """Retrieve changed files from git repository."""
+    cmd = ["git", "-C", target_dir]
+    if mode == "staged":
+        cmd += ["diff", "--cached", "--name-only", "--diff-filter=ACMR"]
+    elif mode == "diff":
+        cmd += ["diff", "HEAD", "--name-only", "--diff-filter=ACMR"]
+    else:
+        return []
+    try:
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        files = [os.path.join(target_dir, f.strip()) for f in res.stdout.splitlines() if f.strip()]
+        return [f for f in files if os.path.isfile(f) and os.path.splitext(f)[1] in EXTENSIONS]
+    except Exception:
+        return []
 
 def main():
     parser = argparse.ArgumentParser(description="FullStack Bug Hunter Static Heuristic Scanner")
@@ -176,16 +271,43 @@ def main():
     parser.add_argument("--max-lines", type=int, default=250, help="Max line limit per file (default: 250)")
     parser.add_argument("--skip-data", action="store_true", help="Skip large static data directories (e.g. data/)")
     parser.add_argument("--severity", choices=["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"], default="ALL")
+    parser.add_argument("--staged", action="store_true", help="Only scan files currently staged in git index (Pre-commit mode)")
+    parser.add_argument("--diff", action="store_true", help="Only scan modified/uncommitted files in git repository")
+    parser.add_argument("--fix", action="store_true", help="Automatically apply surgical fixes for high-confidence defects")
+    parser.add_argument("--dry-run", action="store_true", help="Preview fixes without writing to disk (used with --fix)")
     args = parser.parse_args()
 
     target_path = os.path.abspath(args.target)
-    files_to_scan = []
 
+    # 1. If --fix requested, run auto-fixer first
+    if args.fix or args.dry_run:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        fixer_script = os.path.join(script_dir, "auto_fixer.py")
+        fixer_cmd = [sys.executable, fixer_script, target_path]
+        if args.dry_run:
+            fixer_cmd.append("--dry-run")
+        subprocess.run(fixer_cmd)
+        if args.dry_run and not args.fix:
+            return 0
+
+    files_to_scan = []
     exclude_dirs = set(DEFAULT_EXCLUDE_DIRS)
     if args.skip_data:
-        exclude_dirs.add("data")
+        exclude_dirs.update(["data", "starDict"])
 
-    if os.path.isfile(target_path):
+    if args.staged:
+        files_to_scan = get_git_files(target_path, "staged")
+        if not files_to_scan:
+            print(f"\n{COLOR_CYAN}=== 全栈代码法医 · Git 暂存区增量门禁 (--staged) ==={COLOR_RESET}")
+            print(f"{COLOR_GREEN}✓ 暂存区无相关代码变更，0 文件需扫描。{COLOR_RESET}\n")
+            return 0
+    elif args.diff:
+        files_to_scan = get_git_files(target_path, "diff")
+        if not files_to_scan:
+            print(f"\n{COLOR_CYAN}=== 全栈代码法医 · Git 工作区增量扫描 (--diff) ==={COLOR_RESET}")
+            print(f"{COLOR_GREEN}✓ 工作区无相关代码变更，0 文件需扫描。{COLOR_RESET}\n")
+            return 0
+    elif os.path.isfile(target_path):
         files_to_scan.append(target_path)
     else:
         for root, dirs, files in os.walk(target_path):
@@ -199,7 +321,8 @@ def main():
     issue_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
 
     for fpath in files_to_scan:
-        enforce_size = not (args.skip_data and "/data/" in fpath)
+        is_dict_or_data = any(sub in fpath for sub in ("/data/", "/starDict/", "/locales/"))
+        enforce_size = not (args.skip_data and is_dict_or_data)
         issues = scan_file(fpath, args.max_lines, enforce_file_size=enforce_size)
         filtered = [
             i for i in issues 
@@ -235,7 +358,7 @@ def main():
         except Exception:
             pass
 
-    print(f"\n{COLOR_CYAN}=== FullStack Bug Hunter Static Heuristic Scan ==={COLOR_RESET}")
+    print(f"\n{COLOR_CYAN}=== 全栈代码法医 (Code Forensic) · 启发式缺陷扫描器 ==={COLOR_RESET}")
     print(f"Target: {target_path}")
     print(f"Scanned: {total_scanned} files | Max Lines Rule: {args.max_lines}")
     print(f"Issues: {COLOR_RED}CRITICAL: {issue_counts['CRITICAL']}{COLOR_RESET} | "

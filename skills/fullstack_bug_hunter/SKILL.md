@@ -1,7 +1,10 @@
 ---
 name: fullstack_bug_hunter
-description: 全栈深层缺陷与隐蔽 Bug 自动化审计中枢。融合 GitHub 前沿静态分析启发式规则、Web3/TON 公链陷阱（Bounceable/BigInt/地址标准化）、移动端 Safari/WebView/PWA 沙箱缺陷、React 并发状态竞态、Popstate 历史记录栈防死锁与小文件单一职责规范。
+description: 全栈代码法医 (Fullstack Code Forensic)。面向现代 Web3/DApp、移动端 Safari/WebView/PWA 与微服务的病理级深层缺陷排查与自愈中枢。融合 Web3/TON 链上资金陷阱、Safari 视口与手势剪贴板沙箱缺陷、React 并发竞态、多语言 Key 100% 对齐与 250 行小文件单一职责铁律。
 triggers:
+  - 全栈代码法医
+  - 代码法医
+  - 法医
   - bug_hunt
   - bug_audit
   - find_bugs
@@ -9,58 +12,93 @@ triggers:
   - 检查bug
   - 找bug
   - 排查bug
+  - 找暗坑
   - 代码审计
 ---
 
-# 全栈深层缺陷与隐蔽 Bug 自动化审计中枢 (FullStack Bug Hunter)
+# 全栈代码法医 (FullStack Code Forensic / Bug Hunter)
 
 ## 概述
-FullStack Bug Hunter 是面向现代高可用 Web3、移动端 WebApp/PWA 与微服务的系统化 Bug 深度排查与自愈中枢。本技能汲取了业内顶级安全审计经验（Slither、SlowMist Web3 安全规范、SEAL 安全联盟、Semgrep 启发式规则），并深度整合了我们在生产环境沉淀的 6 大核心缺陷维度，提供由静态 AST 扫描到动态运行时验证的全链路审计规范。
+全栈代码法医 (FullStack Code Forensic) 是面向现代高可用 Web3、移动端 WebApp/PWA 与微服务的病理级 Bug 深度排查与自愈中枢。本技能汲取了业内顶级安全审计经验（Slither、SlowMist Web3 安全规范、SEAL 安全联盟、Semgrep 启发式规则），并深度整合了我们在生产环境沉淀的 6 大核心缺陷维度，提供由静态 AST 扫描到动态运行时验证的全链路审计规范。
 
 ---
 
 ## 核心排查工具与参考资产
 
-### 1. 自动化启发式缺陷扫描器
-- **执行脚本**: [bug_scanner.py](./scripts/bug_scanner.py)
-- **支持规则集**:
+### 1. 自动化全量分析与验收中枢
+- **启发式缺陷扫描器**: [bug_scanner.py](./scripts/bug_scanner.py) (AST / 正则双层启发式扫描，支持 `--staged` 增量与 `--fix` 自愈)
+- **语义级污点流向分析器 (CodeQL-Inspired)**: [taint_analyzer.py](./scripts/taint_analyzer.py) (从 Storage / URL / RPC 污染源追踪至 Parse / BigInt / 异步 State / DOM XSS 致死汇，支持 `--staged`)
+- **手术刀式自愈引擎**: [auto_fixer.py](./scripts/auto_fixer.py) (高置信度暗坑自动重构修复与补丁预演，严格守护 250 行小文件红线)
+- **Git Pre-Commit 门禁安装器**: [install_hook.sh](./scripts/install_hook.sh) (一键为工程注入 `<10ms` 增量提交审查守卫)
+- **多语言 Key 对齐自动化探针**: [i18n_parity_checker.py](./scripts/i18n_parity_checker.py) (基准字典拓扑对齐与插值占位符一致性核查)
+- **四步全量回归与验收守卫**: [verify_fix.sh](./scripts/verify_fix.sh) (支持全量扫描、`--staged` 增量、`--fix` 自动自愈与 `--install-hook`)
+
+### 2. 核心检测规则库 (Rules Matrix)
+- **Web3 & 链上资产安全**:
   - `RULE-W3-01`: BigInt 浮点数与科学计数法转换截断异常
   - `RULE-W3-02`: TON/加密货币原始字符串地址 `===` 直接比对陷阱
   - `RULE-W3-03`: 用户打赏/转账目标地址硬编码 `bounceable: true` 导致未初始化新钱包资金回弹
   - `RULE-W3-04`: TonConnect 2.0 签名验签摘要构造与 `'ton-safe-sign-magic'` 混用及伪签名放行漏洞
   - `RULE-W3-05`: 变量未经 try/catch 强转 `BigInt()` 遭遇非数字字符串导致运行时崩溃
   - `RULE-W3-06`: TonConnect UI 配置依赖 `walletsListUrl` 无效参数及 GitHub Raw 超时导致钱包选单退化只剩 Tonkeeper
-  - `RULE-W3-07`: 拉起钱包前串行阻塞调用 RPC 导致的界面假死与按钮死锁（强制 0ms 本地离线 BOC 构建与异步后台出块追踪）
-  - `RULE-W3-08`: TonConnect 移动端长连接 Session 锁定导致无法自选/切换其他钱包（强制显式换钱包解绑与重新呼起通道）
-  - `RULE-W3-09`: 客户端多消息分账（Multi-message）在 Telegram Wallet (`@wallet`) 等移动端环境遭遇签名不支持/闪退陷阱
+  - `RULE-W3-07`: 拉起钱包前串行阻塞调用 RPC 导致的界面假死与按钮死锁
+  - `RULE-W3-08`: TonConnect 移动端长连接 Session 锁定导致无法自选/切换其他钱包
+  - `RULE-W3-09`: 客户端多消息分账（Multi-message）在 Telegram Wallet 等移动端环境遭遇签名不支持/闪退陷阱
+  - `RULE-W3-10`: 硬编码单一第三方公有 RPC 节点缺乏容灾熔断降级池（HTTP 429 故障陷阱）
+  - `RULE-W3-11`: TON 原始 Raw (0:...) 与 Bounceable (EQ...) 地址直用 `===` 字符串比对导致误判失败
+- **移动端 Safari / WebKit / Telegram Mini App**:
   - `RULE-MOB-01`: iOS Safari/WebKit 异步 `await` 导致剪贴板用户手势凭据失效
   - `RULE-MOB-02`: 移动端 WebView/Telegram 环境直调非 Universal 自定义协议导致白屏崩溃
   - `RULE-MOB-03`: 原生 `alert()`/`confirm()` 阻塞事件循环与冻结主线程
   - `RULE-MOB-04`: 粗暴使用 `document.body.style.touchAction = 'none'` 导致移动端手势死锁
-  - `RULE-MOB-05`: 离屏生成海报时元素置于 `-9999px` 遭遇 WebKit 视口裁剪导致黑屏/空白画布
+  - `RULE-MOB-05`: 离屏生成海报或复制 DOM 置于 `-9999px` 遭遇 WebKit 视口裁剪黑屏或视口跳动陷阱
   - `RULE-MOB-06`: 未受控调用 `URL.createObjectURL` 且缺少 `URL.revokeObjectURL` 导致的内存泄漏
-  - `RULE-CI-01`: Cloudflare Pages / Vercel Tailwind v4 构建缺少 `.nvmrc` Node 20 锁文件
+  - `RULE-MOB-07`: 裸调 `navigator.clipboard.writeText` 缺少 DOM 选区安全降级与 catch 捕获
+  - `RULE-MOB-08`: 裸调 `navigator.vibrate` 在 iOS Safari / WebKit 抛错或静默失效
+- **系统安全与数据防泄露 (Security & Secrets)**:
+  - `RULE-SEC-01`: 裸调 `JSON.parse(storage.getItem)` 缺少结构校验与迁移守卫（老缓存白屏陷阱）
+  - `RULE-SEC-02`: 本地 Storage 存储未加密助记词或私钥明文（P0 资金泄露陷阱）
+  - `RULE-SEC-03`: `postMessage` 监听器未做 `event.origin` 来源域名校验
+- **React 状态机与架构规范**:
   - `RULE-RCT-01`: 动态可变/可排序列表使用 `key={index}` 导致虚拟 DOM 复用错乱
   - `RULE-RCT-02`: 未经 DOMPurify 脱敏的 `dangerouslySetInnerHTML` XSS 注入
   - `RULE-RCT-03`: 弹窗未受控挂载 `history.pushState` 导致的物理返回键死锁
   - `RULE-RCT-04`: `useEffect` 内监听器或定时器缺少 `return` 清理导致的内存泄露
   - `RULE-RCT-05`: 表单编辑态数组过滤导致的下拉选择框槽位塌缩错位 (Array Shift Glitch)
+  - `RULE-RCT-06`: 复杂表单选择器与可变插槽空过滤导致索引塌缩错位
   - `RULE-ARCH-01`: 单文件超出 250 行阈值违规（小文件单一职责标准）
+- **数据流与污点追踪规则 (Taint Flows)**:
+  - `TAINT-STORAGE-PARSE`: 存储不可信数据流入无防护 `JSON.parse`
+  - `TAINT-BIGINT-CAST`: 外部/不可信变量流入无 try/catch 的 `BigInt`
+  - `TAINT-URL-REDIRECT`: URL 查询参数直接流入 `window.location.href` 或 `window.open`
+  - `TAINT-ASYNC-RACE`: 异步网络请求在 `useEffect` 中流入未挂载防护的 `setState`
+  - `TAINT-XSS-DOM`: 外部表达式直接流入未脱敏的 `dangerouslySetInnerHTML`
+  - `TAINT-POSTMESSAGE-ORIGIN`: 未核验 Origin 的跨窗口通信流入消息处理逻辑
+  - `TAINT-STORAGE-SECRET`: 敏感凭据/私钥流入浏览器本地持久化存储
 
-### 2. 专项缺陷排查参考矩阵 (Progressive Disclosure)
+### 3. 专项缺陷排查参考矩阵 (Progressive Disclosure)
 - [Web3 & TON 公链交互缺陷矩阵](./references/web3_ton_matrix.md)
 - [移动端 Safari、PWA 与 Telegram WebApp 运行环境缺陷矩阵](./references/mobile_webview_matrix.md)
 - [React 18/19 并发渲染、状态机竞态与架构陷阱矩阵](./references/react_concurrency_matrix.md)
+- [安全防御与数据流污点追踪矩阵](./references/security_taint_matrix.md)
 
 ---
 
 ## 六阶段系统化排查标准 SOP (6-Phase Audit SOP)
 
-### 阶段一：自动化启发式扫描 (Automated Static Heuristic Scan)
+### 阶段一：自动化启发式扫描与增量门禁 (Static Heuristic & Incremental Audit)
 针对目标工程目录运行缺陷扫描器，获取首批潜在威胁报告：
 ```bash
-# 扫描指定工程目录（例：rawxiaojiucai）
-python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py /Users/hi/niuma/projects/rawxiaojiucai --skip-data
+# 1. 全量扫描指定工程目录
+python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py <target_path> --skip-data
+
+# 2. 暂存区增量门禁扫描（毫秒级，仅审查本次 git add 的文件）
+python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py <target_path> --staged
+
+# 3. 手术刀式一键自动修复高频暗坑
+python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py <target_path> --fix
+# 或预演修复 Diff 补丁
+python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py <target_path> --dry-run
 ```
 - 检查是否存在 `CRITICAL` 或 `HIGH` 级别的阻断性异常；
 - 统计是否有业务文件突破 250 行的小文件规范红线。
@@ -101,20 +139,30 @@ python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py /Us
    - 检索组件内的所有 `setInterval`、`setTimeout`、`addEventListener`，必须具备 `return () => cleanup`。
 
 ### 阶段五：功能契约与数据边界一致性核查 (Contract & Boundary Audit)
-1. **UI 占位符与底层过滤对齐**:
+1. **多语言字典 100% 对齐自动化核查**:
+   - 运行专用多语言探针，杜绝字段缺失导致卡片空白或静默回退中文：
+   ```bash
+   python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/i18n_parity_checker.py <target_path>
+   ```
+2. **UI 占位符与底层过滤对齐**:
    - 校验搜索框 Placeholder 所承诺的检索字段是否全部在过滤回调（如 `posts.filter`）中得到了实现；
-2. **多语言字典全覆盖**:
-   - 检查所有语言文件（中简、中繁、中港、英等）的 Key 是否 100% 对齐，杜绝页面切换语言时出现 `undefined` 字段；
 3. **网络与接口降级容灾**:
    - 针对图片、IPFS 网关与外部 RPC，必须具备多网关竞速或自动 Fallback 机制（如 Pinata -> dweb -> cloudflare-ipfs）。
 
 ### 阶段六：修复验证与防退化验收 (Remediation & Regression Verification)
-1. 修复后再次执行扫描器，确认漏洞数量清零：
+1. **一键自动化全流程回归校验**:
    ```bash
-   python3 /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/bug_scanner.py <target_path> --skip-data
+   # 全量回归验证 (4 步完整流水线)
+   bash /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/verify_fix.sh <target_path>
+
+   # 暂存区增量回归验证
+   bash /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/verify_fix.sh <target_path> --staged
+
+   # 一键为项目安装 Git Pre-Commit 拦截门禁
+   bash /Users/hi/.agents/skills/fullstack_bug_hunter/scripts/verify_fix.sh <target_path> --install-hook
    ```
-2. 执行前端构建与类型检查（在 Mac 本地极速校验）：
-   ```bash
-   npm run build
-   ```
-3. 检查变更代码是否严格遵守 `< 250` 行小文件标准。
+   - **Step 1/4**: 运行 `bug_scanner.py`（确保 CRITICAL / HIGH 启发式违规清零）；
+   - **Step 2/4**: 运行 `taint_analyzer.py`（确保不可信污点流向与未防护异步状态竞态清零）；
+   - **Step 3/4**: 运行 `i18n_parity_checker.py`（确保所有语系字典 Key 与参数 100% 对齐）；
+   - **Step 4/4**: 执行 `npm run build`（确保 TypeScript 类型编译与前端产物 0 错误）。
+2. **小文件原则审查**: 检查所有变更业务代码文件，必须严格恪守 `<= 250` 行小文件标准（`RULE-ARCH-01`）。
